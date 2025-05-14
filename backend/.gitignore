@@ -1,7 +1,7 @@
-HELP.md
+../HELP.md
 .gradle
 build/
-!gradle/wrapper/gradle-wrapper.jar
+!backend/gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# application 설정파일 무시
+src/main/resources/application-local.yml
+src/main/resources/application-prod.yml
