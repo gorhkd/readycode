@@ -10,7 +10,7 @@ import lombok.Getter;
 @MappedSuperclass
 public abstract class BaseIdEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  protected Long id;
 }
