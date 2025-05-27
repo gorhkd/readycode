@@ -2,6 +2,7 @@ package com.ll.readycode.api.templates.controller;
 
 import com.ll.readycode.api.templates.dto.request.TemplateCreateRequest;
 import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
+import com.ll.readycode.api.templates.dto.response.TemplateDetailResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateResponse;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
@@ -17,6 +18,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class TemplateController {
   private final TemplateService templateService;
+
+  @GetMapping("/{templatesId}")
+  public ResponseEntity<SuccessResponse<TemplateDetailResponse>> detailsTemplate(
+      @PathVariable Long templatesId) {
+    Template template = templateService.findTemplateById(templatesId);
+    return ResponseEntity.ok(
+        SuccessResponse.of("성공적으로 게시물 상세 정보를 조회했습니다.", TemplateDetailResponse.of(template)));
+  }
 
   @PostMapping
   public ResponseEntity<SuccessResponse<TemplateResponse>> createTemplate(
