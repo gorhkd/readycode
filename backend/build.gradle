@@ -25,6 +25,7 @@ dependencies {
 
 	// Lombok
 	implementation 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
 
 	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
