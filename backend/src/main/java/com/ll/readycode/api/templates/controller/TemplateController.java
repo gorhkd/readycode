@@ -1,6 +1,7 @@
 package com.ll.readycode.api.templates.controller;
 
 import com.ll.readycode.api.templates.dto.request.TemplateCreateRequest;
+import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateResponse;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
@@ -23,5 +24,13 @@ public class TemplateController {
     Template template = templateService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.of("게시물이 성공적으로 생성되었습니다.", TemplateResponse.of(template)));
+  }
+
+  @PatchMapping("/{templatesId}")
+  public ResponseEntity<SuccessResponse<TemplateResponse>> modifyTemplate(
+      @Valid @RequestBody TemplateUpdateRequest request, @PathVariable Long templatesId) {
+    Template template = templateService.update(templatesId, request);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
   }
 }

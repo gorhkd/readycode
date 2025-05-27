@@ -49,4 +49,12 @@ public class Template extends BaseEntity {
     this.category = category;
     this.seller = seller;
   }
+
+  public void update(String title, String description, int price, String image, Category category) {
+    this.title = title;
+    this.description = description;
+    this.price = price;
+    this.image = image;
+    this.category = category;
+  }
 }
