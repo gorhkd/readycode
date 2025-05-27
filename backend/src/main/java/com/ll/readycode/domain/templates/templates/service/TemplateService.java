@@ -51,6 +51,14 @@ public class TemplateService {
     return template;
   }
 
+  @Transactional
+  public void delete(Long templatesId) {
+    Template template = findTemplateById(templatesId);
+
+    // TODO: 현재 로그인한 유저의 ID와 템플릿의 판매자 ID 비교 후 권한 체크
+    templateRepository.delete(template);
+  }
+
   @Transactional(readOnly = true)
   public Template findTemplateById(Long templatesId) {
     return templateRepository

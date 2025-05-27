@@ -33,4 +33,10 @@ public class TemplateController {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
   }
+
+  @DeleteMapping("/{templatesId}")
+  public ResponseEntity<SuccessResponse> modifyTemplate(@PathVariable Long templatesId) {
+    templateService.delete(templatesId);
+    return ResponseEntity.ok(SuccessResponse.of("게시물이 성공적으로 삭제되었습니다.", null));
+  }
 }
