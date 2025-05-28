@@ -72,6 +72,7 @@ public class KakaoOAuthService implements OAuthService {
     MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
     body.add("grant_type", "authorization_code");
     body.add("client_id", kakao.getClientId());
+    body.add("client_secret", kakao.getClientSecret());
     body.add("redirect_url", kakao.getRedirectUri());
     body.add("code", authCode);
 
