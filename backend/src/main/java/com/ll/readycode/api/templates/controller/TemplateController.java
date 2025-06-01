@@ -4,11 +4,14 @@ import com.ll.readycode.api.templates.dto.request.TemplateCreateRequest;
 import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateDetailResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateResponse;
+import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +21,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class TemplateController {
   private final TemplateService templateService;
+
+  @GetMapping
+  public ResponseEntity<TemplateScrollResponse> getTemplates(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          LocalDateTime cursor,
+      @RequestParam(defaultValue = "10") int limit) {
+    TemplateScrollResponse response = templateService.getTemplates(cursor, limit);
+    return ResponseEntity.ok(response);
+  }
 
   @GetMapping("/{templatesId}")
   public ResponseEntity<SuccessResponse<TemplateDetailResponse>> detailsTemplate(
