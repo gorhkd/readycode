@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -43,13 +42,8 @@ public class JwtProvider {
         .compact();
   }
 
-  public boolean validateToken(String token) {
-    try {
-      Jwts.parserBuilder().setSigningKey(jwtSigningKey).build().parseClaimsJws(token);
-      return true;
-    } catch (JwtException | IllegalArgumentException e) {
-      return false;
-    }
+  public void validateToken(String token) {
+    Jwts.parserBuilder().setSigningKey(jwtSigningKey).build().parseClaimsJws(token);
   }
 
   public String getSubject(String token) {
