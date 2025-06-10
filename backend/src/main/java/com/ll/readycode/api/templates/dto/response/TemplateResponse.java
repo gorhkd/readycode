@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record TemplateResponse(
-    Long postId,
+    Long templateId,
     String title,
     String description,
     LocalDateTime createdAt,
@@ -14,7 +14,7 @@ public record TemplateResponse(
     String category) {
   public static TemplateResponse of(Template template) {
     return TemplateResponse.builder()
-        .postId(template.getId())
+        .templateId(template.getId())
         .title(template.getTitle())
         .description(template.getDescription())
         .createdAt(template.getCreatedAt())
