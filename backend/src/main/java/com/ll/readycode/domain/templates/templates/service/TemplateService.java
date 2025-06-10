@@ -8,7 +8,6 @@ import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.service.CategoryService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
-import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import jakarta.validation.Valid;
@@ -31,7 +30,6 @@ public class TemplateService {
   public Template create(TemplateCreateRequest request) {
     Category category = categoryService.findCategoryById(request.categoryId());
     // TODO: 추후 인증 구현 후 SecurityContext에서 seller(UserProfile) 가져오기
-    UserProfile userProfile = new UserProfile(); // 현재는 비어있는 객체로 임시 생성
 
     Template template =
         Template.builder()
@@ -40,7 +38,6 @@ public class TemplateService {
             .image(request.image())
             .price(request.price())
             .category(category)
-            .seller(userProfile)
             .build();
 
     templateRepository.save(template);
