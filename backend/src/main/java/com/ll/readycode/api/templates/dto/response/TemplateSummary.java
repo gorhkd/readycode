@@ -10,7 +10,7 @@ public record TemplateSummary(
         template.getId(),
         template.getTitle(),
         template.getPrice(),
-        template.getCategory().toString(),
+        template.getCategory().getName(),
         template.getCreatedAt());
   }
 }
