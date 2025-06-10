@@ -51,7 +51,7 @@ public class TemplateController {
   public ResponseEntity<SuccessResponse<TemplateResponse>> modifyTemplate(
       @Valid @RequestBody TemplateUpdateRequest request, @PathVariable Long templatesId) {
     Template template = templateService.update(templatesId, request);
-    return ResponseEntity.status(HttpStatus.CREATED)
+    return ResponseEntity.status(HttpStatus.OK)
         .body(SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
   }
 
