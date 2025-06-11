@@ -23,12 +23,12 @@ public class TemplateController {
   private final TemplateService templateService;
 
   @GetMapping
-  public ResponseEntity<TemplateScrollResponse> getTemplates(
+  public ResponseEntity<SuccessResponse<TemplateScrollResponse>> getTemplates(
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = "10") int limit) {
     TemplateScrollResponse response = templateService.getTemplates(cursor, limit);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(SuccessResponse.of("템플릿 목록을 성공적으로 조회했습니다.", response));
   }
 
   @GetMapping("/{templatesId}")
@@ -51,8 +51,8 @@ public class TemplateController {
   public ResponseEntity<SuccessResponse<TemplateResponse>> modifyTemplate(
       @Valid @RequestBody TemplateUpdateRequest request, @PathVariable Long templatesId) {
     Template template = templateService.update(templatesId, request);
-    return ResponseEntity.status(HttpStatus.OK)
-        .body(SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
+    return ResponseEntity.ok(
+        SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
   }
 
   @DeleteMapping("/{templatesId}")
