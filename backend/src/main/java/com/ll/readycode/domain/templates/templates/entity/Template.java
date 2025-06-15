@@ -1,4 +1,44 @@
 package com.ll.readycode.domain.templates.templates.entity;
 
-public class Template {
+import com.ll.readycode.domain.categories.entity.Category;
+import com.ll.readycode.global.common.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SuperBuilder
+public class Template extends BaseEntity {
+
+  @Column(nullable = false)
+  private String title;
+
+  @Column(columnDefinition = "TEXT")
+  private String description;
+
+  @Column(nullable = false)
+  private int price;
+
+  @Column(nullable = false)
+  private String image;
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "category_id", nullable = false)
+  private Category category;
+
+  //  @ManyToOne(fetch = FetchType.LAZY)
+  //  @JoinColumn(name = "seller_id", nullable = false)
+  //  private UserProfile seller;
+
+  public void update(String title, String description, int price, String image, Category category) {
+    this.title = title;
+    this.description = description;
+    this.price = price;
+    this.image = image;
+    this.category = category;
+  }
 }
