@@ -57,12 +57,11 @@ dependencies {
     // oauth2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-    // QueryDSL
-    implementation 'com.querydsl:querydsl-jpa:5.0.0'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jpa'
-    annotationProcessor 'jakarta.persistence:jakarta.persistence-api:3.1.0'
-    annotationProcessor 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-    annotationProcessor 'javax.persistence:javax.persistence-api:2.2'
+    // QueryDSL - Spring Boot 3.x용 (Jakarta 기반)
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 }
 
 tasks.named('test') {

@@ -14,9 +14,6 @@ import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,15 +61,7 @@ public class TemplateService {
   }
 
   public TemplateScrollResponse getTemplates(LocalDateTime cursor, int limit) {
-    Pageable pageable = PageRequest.of(0, limit, Sort.by("createdAt").descending());
-
-    List<Template> templates;
-
-    if (cursor == null) {
-      templates = templateRepository.findTopByOrderByCreatedAtDesc(pageable);
-    } else {
-      templates = templateRepository.findByCreatedAtBeforeOrderByCreatedAtDesc(cursor, pageable);
-    }
+    List<Template> templates = templateRepository.findScrollTemplates(cursor, limit);
 
     LocalDateTime nextCursor =
         templates.isEmpty() ? null : templates.get(templates.size() - 1).getCreatedAt();

@@ -1,7 +1,6 @@
 package com.ll.readycode.domain.templates.templates.entity;
 
 import com.ll.readycode.domain.categories.entity.Category;
-import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -31,9 +30,9 @@ public class Template extends BaseEntity {
   @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "seller_id", nullable = false)
-  private UserProfile seller;
+  //  @ManyToOne(fetch = FetchType.LAZY)
+  //  @JoinColumn(name = "seller_id", nullable = false)
+  //  private UserProfile seller;
 
   public void update(String title, String description, int price, String image, Category category) {
     this.title = title;

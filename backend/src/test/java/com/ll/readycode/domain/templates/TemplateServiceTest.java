@@ -12,7 +12,6 @@ import com.ll.readycode.domain.categories.service.CategoryService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
-import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.time.LocalDateTime;
@@ -23,9 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 class TemplateServiceTest {
@@ -48,7 +44,6 @@ class TemplateServiceTest {
         .price(100)
         .image("old.png")
         .category(category)
-        .seller(new UserProfile())
         .createdAt(localDateTime)
         .build();
   }
@@ -115,8 +110,7 @@ class TemplateServiceTest {
             createTemplate(1L, "템플릿1", category1, LocalDateTime.now()),
             createTemplate(2L, "템플릿2", category2, LocalDateTime.now().minusMinutes(1)));
 
-    Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
-    given(templateRepository.findTopByOrderByCreatedAtDesc(pageable)).willReturn(templates);
+    given(templateRepository.findScrollTemplates(null, 10)).willReturn(templates);
 
     // when
     TemplateScrollResponse response = templateService.getTemplates(null, 10);
@@ -137,9 +131,7 @@ class TemplateServiceTest {
             createTemplate(1L, "템플릿1", category1, cursor.minusMinutes(1)),
             createTemplate(2L, "템플릿2", category2, cursor.minusMinutes(2)));
 
-    Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
-    given(templateRepository.findByCreatedAtBeforeOrderByCreatedAtDesc(cursor, pageable))
-        .willReturn(templates);
+    given(templateRepository.findScrollTemplates(cursor, 10)).willReturn(templates);
 
     // when
     TemplateScrollResponse response = templateService.getTemplates(cursor, 10);
@@ -153,8 +145,7 @@ class TemplateServiceTest {
   @DisplayName("템플릿 조회 결과가 비어 있을 때 nextCursor는 null")
   void getTemplates_whenResultIsEmpty_thenNextCursorIsNull() {
     // given
-    Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
-    given(templateRepository.findTopByOrderByCreatedAtDesc(pageable)).willReturn(List.of());
+    given(templateRepository.findScrollTemplates(null, 10)).willReturn(List.of());
 
     // when
     TemplateScrollResponse response = templateService.getTemplates(null, 10);
