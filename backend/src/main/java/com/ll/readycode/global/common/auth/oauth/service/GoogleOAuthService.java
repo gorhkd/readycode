@@ -1,7 +1,7 @@
 package com.ll.readycode.global.common.auth.oauth.service;
 
 import com.ll.readycode.domain.users.userauths.repository.UserAuthRepository;
-import com.ll.readycode.global.common.auth.jwt.provider.JwtProvider;
+import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.dto.GoogleTokenResponse;
 import com.ll.readycode.global.common.auth.oauth.dto.GoogleUserInfo;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;

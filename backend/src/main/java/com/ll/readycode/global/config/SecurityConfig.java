@@ -2,7 +2,7 @@ package com.ll.readycode.global.config;
 
 import com.ll.readycode.global.common.auth.handler.CustomAccessDeniedHandler;
 import com.ll.readycode.global.common.auth.handler.CustomAuthenticationEntryPoint;
-import com.ll.readycode.global.common.auth.jwt.filter.JwtAuthenticationFilter;
+import com.ll.readycode.global.common.auth.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,10 +32,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     /* 인증 없어도 되는 API */
                     // 인증 API
-                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers(
+                            "/api/auth/**"
+                    ).permitAll()
                     // Swagger
-                    .requestMatchers("v3/api-docs/**", "/swagger-resources/**", "/swagger-ui*/**",
-                            "/webjars/**", "/swagger/**").permitAll()
+                    .requestMatchers(
+                            "v3/api-docs/**",
+                            "/swagger-resources/**",
+                            "/swagger-ui*/**",
+                            "/webjars/**",
+                            "/swagger/**"
+                    ).permitAll()
 
                     .anyRequest().authenticated()
             )

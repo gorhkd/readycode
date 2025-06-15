@@ -1,4 +1,4 @@
-package com.ll.readycode.global.common.auth.jwt.properties;
+package com.ll.readycode.global.common.auth.jwt;
 
 import lombok.Getter;
 import lombok.Setter;

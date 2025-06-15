@@ -1,6 +1,5 @@
-package com.ll.readycode.global.common.auth.jwt.filter;
+package com.ll.readycode.global.common.auth.jwt;
 
-import com.ll.readycode.global.common.auth.jwt.provider.JwtProvider;
 import com.ll.readycode.global.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -36,13 +35,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       String email = jwtProvider.getSubject(token);
       Authentication auth =
-              new UsernamePasswordAuthenticationToken(
-                      email, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+          new UsernamePasswordAuthenticationToken(
+              email, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
       SecurityContextHolder.getContext().setAuthentication(auth);
 
-
-    } catch (ExpiredJwtException e){
+    } catch (ExpiredJwtException e) {
       request.setAttribute("errorCode", ErrorCode.EXPIRED_TOKEN);
 
     } catch (JwtException | IllegalArgumentException e) {

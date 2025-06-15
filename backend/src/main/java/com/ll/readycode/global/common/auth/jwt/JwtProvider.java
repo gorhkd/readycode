@@ -1,6 +1,5 @@
-package com.ll.readycode.global.common.auth.jwt.provider;
+package com.ll.readycode.global.common.auth.jwt;
 
-import com.ll.readycode.global.common.auth.jwt.properties.JwtProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;

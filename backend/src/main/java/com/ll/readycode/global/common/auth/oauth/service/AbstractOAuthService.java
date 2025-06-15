@@ -5,7 +5,7 @@ import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
 import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userauths.repository.UserAuthRepository;
-import com.ll.readycode.global.common.auth.jwt.provider.JwtProvider;
+import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;
 import com.ll.readycode.global.common.auth.token.RefreshTokenStore;
 import com.ll.readycode.global.exception.CustomException;
@@ -45,23 +45,20 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
             .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
     String accessToken = jwtProvider.createAccessToken(email);
-    String refreshToken = refreshTokenStore.get(email);
+    String refreshToken = refreshTokenStore.get(email).orElse(null);
 
-    boolean isCreated = false;
+    boolean needToCreate = (refreshToken == null);
 
     // Redis에 Refresh 토큰이 존재하지 않을 경우, Refresh 토큰 생성 및 Redis 저장
-    if (refreshToken != null) {
-      isCreated = true;
+    if (!needToCreate) {
+      try {
+        jwtProvider.validateToken(refreshToken);
+      } catch (JwtException | IllegalArgumentException e) {
+        needToCreate = true;
+      }
     }
 
-    try {
-      jwtProvider.validateToken(refreshToken);
-
-    } catch (JwtException | IllegalArgumentException e) {
-      isCreated = true;
-    }
-
-    if (isCreated) {
+    if (needToCreate) {
       refreshToken = jwtProvider.createRefreshToken(user.getEmail());
       refreshTokenStore.save(user.getEmail(), refreshToken);
     }

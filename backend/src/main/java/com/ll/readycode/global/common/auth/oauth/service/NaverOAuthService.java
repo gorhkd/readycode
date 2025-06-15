@@ -1,7 +1,7 @@
 package com.ll.readycode.global.common.auth.oauth.service;
 
 import com.ll.readycode.domain.users.userauths.repository.UserAuthRepository;
-import com.ll.readycode.global.common.auth.jwt.provider.JwtProvider;
+import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.dto.NaverTokenResponse;
 import com.ll.readycode.global.common.auth.oauth.dto.NaverUserInfo;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;
