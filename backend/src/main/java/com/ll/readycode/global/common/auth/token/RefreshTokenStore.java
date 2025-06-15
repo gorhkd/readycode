@@ -1,7 +1,8 @@
 package com.ll.readycode.global.common.auth.token;
 
-import com.ll.readycode.global.common.auth.jwt.properties.JwtProperties;
+import com.ll.readycode.global.common.auth.jwt.JwtProperties;
 import java.time.Duration;
+import java.util.Optional;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +28,8 @@ public class RefreshTokenStore {
     redisTemplate.delete(buildKey(email));
   }
 
-  public String get(String email) {
-    return redisTemplate.opsForValue().get(buildKey(email));
+  public Optional<String> get(String email) {
+    return Optional.ofNullable(redisTemplate.opsForValue().get(buildKey(email)));
   }
 
   private String buildKey(String email) {
