@@ -44,8 +44,8 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
             .findByEmail(email)
             .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
-    String accessToken = jwtProvider.createAccessToken(email);
-    String refreshToken = refreshTokenStore.get(email).orElse(null);
+    String accessToken = jwtProvider.createAccessToken(user.getId());
+    String refreshToken = refreshTokenStore.get(user.getId()).orElse(null);
 
     boolean needToCreate = (refreshToken == null);
 
@@ -59,8 +59,8 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
     }
 
     if (needToCreate) {
-      refreshToken = jwtProvider.createRefreshToken(user.getEmail());
-      refreshTokenStore.save(user.getEmail(), refreshToken);
+      refreshToken = jwtProvider.createRefreshToken(user.getId());
+      refreshTokenStore.save(user.getId(), refreshToken);
     }
 
     return Token.builder().accessToken(accessToken).refreshToken(refreshToken).build();

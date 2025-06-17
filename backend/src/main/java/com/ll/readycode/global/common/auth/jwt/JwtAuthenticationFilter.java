@@ -1,5 +1,9 @@
 package com.ll.readycode.global.common.auth.jwt;
 
+import static com.ll.readycode.global.common.auth.jwt.JwtFilterExcludeProperties.EXCLUDE_URIS;
+
+import com.ll.readycode.global.common.auth.user.CustomUserDetails;
+import com.ll.readycode.global.common.auth.user.CustomUserDetailsService;
 import com.ll.readycode.global.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -14,7 +18,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
@@ -22,6 +28,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtProvider jwtProvider;
+  private final AntPathMatcher pathMatcher = new AntPathMatcher();
+  private final CustomUserDetailsService customUserDetailsService;
 
   @Override
   protected void doFilterInternal(
@@ -30,24 +38,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String token = resolveToken(request);
 
-    try {
-      jwtProvider.validateToken(token);
+    if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+      try {
+        jwtProvider.validateToken(token);
+        Long userId = jwtProvider.getUserIdFromToken(token);
 
-      String email = jwtProvider.getSubject(token);
-      Authentication auth =
-          new UsernamePasswordAuthenticationToken(
-              email, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        UserDetails userDetails =
+            customUserDetailsService.loadUserByUsername(String.valueOf(userId));
+        String role = ((CustomUserDetails) userDetails).getUserProfile().getRole().name();
 
-      SecurityContextHolder.getContext().setAuthentication(auth);
+        Authentication auth =
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
-    } catch (ExpiredJwtException e) {
-      request.setAttribute("errorCode", ErrorCode.EXPIRED_TOKEN);
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
-    } catch (JwtException | IllegalArgumentException e) {
-      request.setAttribute("errorCode", ErrorCode.INVALID_TOKEN);
+      } catch (ExpiredJwtException e) {
+        request.setAttribute("errorCode", ErrorCode.EXPIRED_TOKEN);
+      } catch (JwtException | IllegalArgumentException e) {
+        request.setAttribute("errorCode", ErrorCode.INVALID_TOKEN);
+      }
     }
 
     filterChain.doFilter(request, response);
+  }
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+
+    String path = request.getRequestURI();
+
+    return EXCLUDE_URIS.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
   }
 
   private String resolveToken(HttpServletRequest request) {

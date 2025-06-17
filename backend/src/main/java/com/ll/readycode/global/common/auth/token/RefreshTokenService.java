@@ -26,13 +26,13 @@ public class RefreshTokenService {
       throw new CustomException(INVALID_TOKEN);
     }
 
-    String email = jwtProvider.getSubject(refreshToken);
+    Long userId = jwtProvider.getUserIdFromToken(refreshToken);
 
-    // Redis에서 email에 해당하는 Refresh 토큰이 존재하지 않을 경우, 401에러 반환
-    refreshTokenStore.get(email).orElseThrow(() -> new CustomException(EXPIRED_TOKEN));
+    // Redis에서 userId에 해당하는 Refresh 토큰이 존재하지 않을 경우, 401에러 반환
+    refreshTokenStore.get(userId).orElseThrow(() -> new CustomException(EXPIRED_TOKEN));
 
     return Token.builder()
-        .accessToken(jwtProvider.createAccessToken(email))
+        .accessToken(jwtProvider.createAccessToken(userId))
         .refreshToken(refreshToken)
         .build();
   }

@@ -21,20 +21,20 @@ public class JwtProvider {
         Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
   }
 
-  public String createAccessToken(String email) {
-    return createToken(email, Duration.ofMinutes(jwtProperties.getAccessToken().getValidMinute()));
+  public String createAccessToken(Long userId) {
+    return createToken(userId, Duration.ofMinutes(jwtProperties.getAccessToken().getValidMinute()));
   }
 
-  public String createRefreshToken(String email) {
-    return createToken(email, Duration.ofDays(jwtProperties.getRefreshToken().getValidDay()));
+  public String createRefreshToken(Long userId) {
+    return createToken(userId, Duration.ofDays(jwtProperties.getRefreshToken().getValidDay()));
   }
 
-  private String createToken(String email, Duration validity) {
+  private String createToken(Long userId, Duration validity) {
     Date now = new Date();
     Date expiry = new Date(now.getTime() + validity.toMillis());
 
     return Jwts.builder()
-        .setSubject(email)
+        .setSubject(userId.toString())
         .setIssuedAt(now)
         .setExpiration(expiry)
         .signWith(jwtSigningKey, SignatureAlgorithm.HS256)
@@ -45,12 +45,13 @@ public class JwtProvider {
     Jwts.parserBuilder().setSigningKey(jwtSigningKey).build().parseClaimsJws(token);
   }
 
-  public String getSubject(String token) {
-    return Jwts.parserBuilder()
-        .setSigningKey(jwtSigningKey)
-        .build()
-        .parseClaimsJws(token)
-        .getBody()
-        .getSubject();
+  public Long getUserIdFromToken(String token) {
+    return Long.parseLong(
+        Jwts.parserBuilder()
+            .setSigningKey(jwtSigningKey)
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .getSubject());
   }
 }

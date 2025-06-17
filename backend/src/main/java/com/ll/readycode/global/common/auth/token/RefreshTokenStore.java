@@ -20,19 +20,19 @@ public class RefreshTokenStore {
     this.refreshTokenExpire = Duration.ofDays(jwtProperties.getRefreshToken().getValidDay());
   }
 
-  public void save(String email, String refreshToken) {
-    redisTemplate.opsForValue().set(buildKey(email), refreshToken, refreshTokenExpire);
+  public void save(Long userId, String refreshToken) {
+    redisTemplate.opsForValue().set(buildKey(userId), refreshToken, refreshTokenExpire);
   }
 
-  public void delete(String email) {
-    redisTemplate.delete(buildKey(email));
+  public void delete(Long userId) {
+    redisTemplate.delete(buildKey(userId));
   }
 
-  public Optional<String> get(String email) {
-    return Optional.ofNullable(redisTemplate.opsForValue().get(buildKey(email)));
+  public Optional<String> get(Long userId) {
+    return Optional.ofNullable(redisTemplate.opsForValue().get(buildKey(userId)));
   }
 
-  private String buildKey(String email) {
-    return "refresh_token:" + email;
+  private String buildKey(Long userId) {
+    return "refresh_token:" + userId;
   }
 }

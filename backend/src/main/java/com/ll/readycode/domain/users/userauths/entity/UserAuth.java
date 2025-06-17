@@ -16,8 +16,6 @@ public class UserAuth extends BaseEntity {
 
   private String providerId;
 
-  private String role;
-
   @ManyToOne
   private UserProfile userProfile;
 }
