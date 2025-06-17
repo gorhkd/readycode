@@ -1,5 +1,6 @@
 package com.ll.readycode.api.controller.userauths;
 
+import com.ll.readycode.api.dto.userauths.UserAuthRequestDto.Logout;
 import com.ll.readycode.api.dto.userauths.UserAuthRequestDto.OAuthLogin;
 import com.ll.readycode.api.dto.userauths.UserAuthRequestDto.TokenReissue;
 import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
@@ -37,5 +38,13 @@ public class UserAuthController {
     Token tokenInfo = refreshTokenService.reissue(reissueRequest.refreshToken());
 
     return ResponseEntity.ok(SuccessResponse.of(tokenInfo));
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<SuccessResponse<Void>> logout(@RequestBody Logout logoutRequest) {
+
+    refreshTokenService.delete(logoutRequest.refreshToken());
+
+    return ResponseEntity.noContent().build();
   }
 }

@@ -27,6 +27,8 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "A002", "접근이 거부되었습니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "A003", "토큰이 만료되었습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "A004", "유효하지 않은 토큰입니다."),
+    MISSING_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "A005", "Refresh 토큰이 누락되었습니다."),
+    LOGOUT_ALREADY(HttpStatus.FORBIDDEN, "A006", "이미 로그아웃된 사용자입니다."),
 
     // 템플릿 (Template)
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "T001", "템플릿을 찾을 수 없습니다."),
