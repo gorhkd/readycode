@@ -1,14 +1,15 @@
 package com.ll.readycode.domain.categories.service;
 
+import com.ll.readycode.api.categories.dto.request.CategoryRequest;
+import com.ll.readycode.api.categories.dto.response.CategoryResponse;
 import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.repository.CategoryRepository;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
