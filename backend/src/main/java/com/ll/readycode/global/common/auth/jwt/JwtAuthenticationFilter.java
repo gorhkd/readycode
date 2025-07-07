@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    String token = resolveToken(request);
+    String token = getTokenFromHeader(request);
 
     if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       try {
@@ -55,6 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       } catch (ExpiredJwtException e) {
         request.setAttribute("errorCode", ErrorCode.EXPIRED_TOKEN);
+
       } catch (JwtException | IllegalArgumentException e) {
         request.setAttribute("errorCode", ErrorCode.INVALID_TOKEN);
       }
@@ -71,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     return EXCLUDE_URIS.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
   }
 
-  private String resolveToken(HttpServletRequest request) {
+  private String getTokenFromHeader(HttpServletRequest request) {
 
     String bearer = request.getHeader("Authorization");
     if (bearer == null || !bearer.startsWith("Bearer ")) {
