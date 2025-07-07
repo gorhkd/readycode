@@ -67,6 +67,8 @@ public class OAuthServiceTest {
 
     // given
     String authCode = "mock-auth-code";
+    String provider = "kakao";
+    String providerId = "kakao-test-client-id";
     String email = "testuser@example.com";
     String accessToken = "mock-access-token";
     String refreshToken = "mock-refresh-token";
@@ -75,7 +77,8 @@ public class OAuthServiceTest {
     ReflectionTestUtils.setField(mockUser, "id", 1L);
     ReflectionTestUtils.setField(mockUser, "email", email);
 
-    when(userAuthRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+    when(userAuthRepository.findByProviderAndProviderId(provider, providerId))
+        .thenReturn(Optional.of(mockUser));
     when(jwtProvider.createAccessToken(1L)).thenReturn(accessToken);
     when(refreshTokenStore.get(1L)).thenReturn(Optional.of(refreshToken));
 
@@ -108,6 +111,8 @@ public class OAuthServiceTest {
 
     // given
     String authCode = "mock-auth-code";
+    String provider = "google";
+    String providerId = "google-test-client-id";
     String email = "testuser@example.com";
     String accessToken = "mock-access-token";
     String refreshToken = "mock-refresh-token";
@@ -116,7 +121,8 @@ public class OAuthServiceTest {
     ReflectionTestUtils.setField(mockUser, "id", 1L);
     ReflectionTestUtils.setField(mockUser, "email", email);
 
-    when(userAuthRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+    when(userAuthRepository.findByProviderAndProviderId(provider, providerId))
+        .thenReturn(Optional.of(mockUser));
     when(jwtProvider.createAccessToken(1L)).thenReturn(accessToken);
     when(refreshTokenStore.get(1L)).thenReturn(Optional.of(refreshToken));
 
@@ -149,6 +155,8 @@ public class OAuthServiceTest {
 
     // given
     String authCode = "mock-auth-code";
+    String provider = "naver";
+    String providerId = "naver-test-client-id";
     String email = "testuser@example.com";
     String accessToken = "mock-access-token";
     String refreshToken = "mock-refresh-token";
@@ -157,7 +165,8 @@ public class OAuthServiceTest {
     ReflectionTestUtils.setField(mockUser, "id", 1L);
     ReflectionTestUtils.setField(mockUser, "email", email);
 
-    when(userAuthRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
+    when(userAuthRepository.findByProviderAndProviderId(provider, providerId))
+        .thenReturn(Optional.of(mockUser));
     when(jwtProvider.createAccessToken(1L)).thenReturn(accessToken);
     when(refreshTokenStore.get(1L)).thenReturn(Optional.of(refreshToken));
 

@@ -15,12 +15,15 @@ import org.springframework.util.MultiValueMap;
 @Service("kakao")
 public class KakaoOAuthService extends AbstractOAuthService<KakaoTokenResponse, KakaoUserInfo> {
 
+  private final String provider;
+
   protected KakaoOAuthService(
       OAuthProperties oAuthProperties,
       UserAuthRepository userAuthRepository,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
     super(oAuthProperties, userAuthRepository, jwtProvider, refreshTokenStore);
+    this.provider = "kakao";
   }
 
   @Override
@@ -63,7 +66,17 @@ public class KakaoOAuthService extends AbstractOAuthService<KakaoTokenResponse, 
   }
 
   @Override
+  protected String extractId(KakaoUserInfo userInfo) {
+    return String.valueOf(userInfo.getId());
+  }
+
+  @Override
   protected String extractEmail(KakaoUserInfo userInfo) {
     return userInfo.getEmail();
+  }
+
+  @Override
+  protected String getProvider() {
+    return this.provider;
   }
 }

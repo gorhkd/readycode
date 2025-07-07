@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     UserProfile userProfile =
         userProfileRepository
-            .findById(Integer.parseInt(userId))
+            .findById(Long.parseLong(userId))
             .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
     return new CustomUserDetails(userProfile);

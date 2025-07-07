@@ -13,18 +13,21 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 public class OAuthTestHelper {
 
+  private static final String kakaoProvider = "kakao";
   private static final String kakaoClientId = "kakao-test-client-id";
   private static final String kakaoClientSecret = "kakao-test-secret";
   private static final String kakaoRedirectUri = "kakao-test-redirect-uri";
   private static final String kakaoTokenUri = "kakao-test-token-uri";
   private static final String kakaoUserInfoUri = "kakao-test-user-info-uri";
 
+  private static final String googleProvider = "google";
   private static final String googleClientId = "google-test-client-id";
   private static final String googleClientSecret = "google-test-secret";
   private static final String googleRedirectUri = "google-test-redirect-uri";
   private static final String googleTokenUri = "google-test-token-uri";
   private static final String googleUserInfoUri = "google-test-user-info-uri";
 
+  private static final String naverProvider = "naver";
   private static final String naverClientId = "naver-test-client-id";
   private static final String naverClientSecret = "naver-test-secret";
   private static final String naverRedirectUri = "naver-test-redirect-uri";
@@ -118,6 +121,16 @@ public class OAuthTestHelper {
       protected String extractEmail(KakaoUserInfo userInfo) {
         return userInfo.getEmail();
       }
+
+      @Override
+      protected String extractId(KakaoUserInfo userInfo) {
+        return kakaoClientId;
+      }
+
+      @Override
+      protected String getProvider() {
+        return kakaoProvider;
+      }
     };
   }
 
@@ -156,6 +169,16 @@ public class OAuthTestHelper {
       protected String extractEmail(GoogleUserInfo userInfo) {
         return userInfo.getEmail();
       }
+
+      @Override
+      protected String extractId(GoogleUserInfo userInfo) {
+        return googleClientId;
+      }
+
+      @Override
+      protected String getProvider() {
+        return googleProvider;
+      }
     };
   }
 
@@ -193,6 +216,16 @@ public class OAuthTestHelper {
       @Override
       protected String extractEmail(NaverUserInfo userInfo) {
         return userInfo.getEmail();
+      }
+
+      @Override
+      protected String extractId(NaverUserInfo userInfo) {
+        return naverClientId;
+      }
+
+      @Override
+      protected String getProvider() {
+        return naverProvider;
       }
     };
   }

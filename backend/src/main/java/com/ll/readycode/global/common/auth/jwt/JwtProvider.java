@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +26,8 @@ public class JwtProvider {
     return createToken(userId, Duration.ofMinutes(jwtProperties.getAccessToken().getValidMinute()));
   }
 
-  public String createRefreshToken(Long userId) {
-    return createToken(userId, Duration.ofDays(jwtProperties.getRefreshToken().getValidDay()));
+  public String createRefreshToken() {
+    return UUID.randomUUID().toString();
   }
 
   private String createToken(Long userId, Duration validity) {

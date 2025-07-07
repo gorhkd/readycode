@@ -15,12 +15,15 @@ import org.springframework.util.MultiValueMap;
 @Service("naver")
 public class NaverOAuthService extends AbstractOAuthService<NaverTokenResponse, NaverUserInfo> {
 
+  private final String provider;
+
   protected NaverOAuthService(
       OAuthProperties oAuthProperties,
       UserAuthRepository userAuthRepository,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
     super(oAuthProperties, userAuthRepository, jwtProvider, refreshTokenStore);
+    this.provider = "naver";
   }
 
   @Override
@@ -63,7 +66,17 @@ public class NaverOAuthService extends AbstractOAuthService<NaverTokenResponse, 
   }
 
   @Override
+  protected String extractId(NaverUserInfo userInfo) {
+    return userInfo.getId();
+  }
+
+  @Override
   protected String extractEmail(NaverUserInfo userInfo) {
     return userInfo.getEmail();
+  }
+
+  @Override
+  protected String getProvider() {
+    return this.provider;
   }
 }

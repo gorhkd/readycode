@@ -15,12 +15,15 @@ import org.springframework.util.MultiValueMap;
 @Service("google")
 public class GoogleOAuthService extends AbstractOAuthService<GoogleTokenResponse, GoogleUserInfo> {
 
+  private final String provider;
+
   protected GoogleOAuthService(
       OAuthProperties oAuthProperties,
       UserAuthRepository userAuthRepository,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
     super(oAuthProperties, userAuthRepository, jwtProvider, refreshTokenStore);
+    this.provider = "google";
   }
 
   @Override
@@ -64,7 +67,17 @@ public class GoogleOAuthService extends AbstractOAuthService<GoogleTokenResponse
   }
 
   @Override
+  protected String extractId(GoogleUserInfo userInfo) {
+    return userInfo.getId();
+  }
+
+  @Override
   protected String extractEmail(GoogleUserInfo userInfo) {
     return userInfo.getEmail();
+  }
+
+  @Override
+  protected String getProvider() {
+    return this.provider;
   }
 }

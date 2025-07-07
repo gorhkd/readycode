@@ -36,12 +36,14 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
 
     T tokenResponse = getAccessToken(authCode);
     U userInfo = getUserInfo(getAccessTokenFromResponse(tokenResponse));
-    String email = extractEmail(userInfo);
+    String provider = getProvider();
+    String providerId = extractId(userInfo);
 
+    // TODO: '휴대폰 번호'로 중복가입 확인 기능 추가 시, 로직 수정 필요
     // 가입 이력이 없을 경우, 404 에러 반환
     UserAuth user =
         userAuthRepository
-            .findByEmail(email)
+            .findByProviderAndProviderId(provider, providerId)
             .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
     String accessToken = jwtProvider.createAccessToken(user.getId());
@@ -59,7 +61,7 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
     }
 
     if (needToCreate) {
-      refreshToken = jwtProvider.createRefreshToken(user.getId());
+      refreshToken = jwtProvider.createRefreshToken();
       refreshTokenStore.save(user.getId(), refreshToken);
     }
 
@@ -91,10 +93,25 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
   protected abstract String getAccessTokenFromResponse(T tokenResponse);
 
   /**
+   * SNS API를 통해 얻은 사용자 정보 내 ID 정보를 반환합니다.
+   *
+   * @param userInfo 사용자 프로필 정보
+   * @return String 유저의 ID 정보
+   */
+  protected abstract String extractId(U userInfo);
+
+  /**
    * SNS API를 통해 얻은 사용자 정보 내 이메일 정보를 반환합니다.
    *
    * @param userInfo 사용자 프로필 정보
    * @return String 유저의 이메일 정보
    */
   protected abstract String extractEmail(U userInfo);
+
+  /**
+   * Provider 정보를 반환합니다.
+   *
+   * @return String Provider 정보
+   */
+  protected abstract String getProvider();
 }
