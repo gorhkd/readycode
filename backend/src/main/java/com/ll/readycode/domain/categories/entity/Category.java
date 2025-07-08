@@ -16,4 +16,8 @@ public class Category extends BaseCreatedOnlyEntity {
 
   @Column(nullable = false, unique = true)
   private String name;
+
+  public void updateName(String name) {
+    this.name = name;
+  }
 }
