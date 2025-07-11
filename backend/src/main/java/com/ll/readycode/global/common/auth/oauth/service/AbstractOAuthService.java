@@ -1,10 +1,7 @@
 package com.ll.readycode.global.common.auth.oauth.service;
 
-import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
-
 import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
-import com.ll.readycode.domain.users.userauths.entity.UserAuth;
-import com.ll.readycode.domain.users.userauths.repository.UserAuthRepository;
+import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;
 import com.ll.readycode.global.common.auth.token.RefreshTokenStore;
@@ -15,18 +12,18 @@ import org.springframework.web.client.RestTemplate;
 public abstract class AbstractOAuthService<T, U> implements OAuthService {
 
   protected final OAuthProperties oAuthProperties;
-  protected final UserAuthRepository userAuthRepository;
+  protected final UserProfileService userProfileService;
   protected final JwtProvider jwtProvider;
   protected final RestTemplate restTemplate = new RestTemplate();
   protected final RefreshTokenStore refreshTokenStore;
 
   protected AbstractOAuthService(
       OAuthProperties oAuthProperties,
-      UserAuthRepository userAuthRepository,
+      UserProfileService userProfileService,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
     this.oAuthProperties = oAuthProperties;
-    this.userAuthRepository = userAuthRepository;
+    this.userProfileService = userProfileService;
     this.jwtProvider = jwtProvider;
     this.refreshTokenStore = refreshTokenStore;
   }
@@ -38,34 +35,48 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
     U userInfo = getUserInfo(getAccessTokenFromResponse(tokenResponse));
     String provider = getProvider();
     String providerId = extractId(userInfo);
+    String email = extractEmail(userInfo);
 
-    // TODO: '휴대폰 번호'로 중복가입 확인 기능 추가 시, 로직 수정 필요
-    // 가입 이력이 없을 경우, 404 에러 반환
-    UserAuth user =
-        userAuthRepository
-            .findByProviderAndProviderId(provider, providerId)
-            .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+    Token token;
 
-    String accessToken = jwtProvider.createAccessToken(user.getId());
-    String refreshToken = refreshTokenStore.get(user.getId()).orElse(null);
+    try {
+      // 가입 이력이 있을 경우, AccessToken & RefreshToken 발급
+      Long userId = userProfileService.getUserIdBySocialInfo(provider, providerId);
 
-    boolean needToCreate = (refreshToken == null);
+      String accessToken = jwtProvider.createAccessToken(userId);
+      String refreshToken = refreshTokenStore.get(userId).orElse(null);
 
-    // Redis에 Refresh 토큰이 존재하지 않을 경우, Refresh 토큰 생성 및 Redis 저장
-    if (!needToCreate) {
-      try {
-        jwtProvider.validateToken(refreshToken);
-      } catch (JwtException | IllegalArgumentException e) {
-        needToCreate = true;
+      boolean needToCreate = (refreshToken == null);
+
+      // Redis에 Refresh 토큰이 존재하지 않을 경우, Refresh 토큰 생성 및 Redis 저장
+      if (!needToCreate) {
+        try {
+          jwtProvider.validateToken(refreshToken);
+        } catch (JwtException | IllegalArgumentException e) {
+          needToCreate = true;
+        }
       }
+
+      if (needToCreate) {
+        refreshToken = jwtProvider.createRefreshToken();
+        refreshTokenStore.save(userId, refreshToken);
+      }
+
+      token =
+          Token.builder()
+              .accessToken(accessToken)
+              .refreshToken(refreshToken)
+              .isRegistered(true)
+              .build();
+
+    } catch (CustomException ce) {
+      // 가입 이력이 없을 경우, 임시 AccessToken 발급
+      String tempAccessToken = jwtProvider.createTempAccessToken(provider, providerId, email);
+
+      token = Token.builder().accessToken(tempAccessToken).isRegistered(false).build();
     }
 
-    if (needToCreate) {
-      refreshToken = jwtProvider.createRefreshToken();
-      refreshTokenStore.save(user.getId(), refreshToken);
-    }
-
-    return Token.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+    return token;
   }
 
   /**

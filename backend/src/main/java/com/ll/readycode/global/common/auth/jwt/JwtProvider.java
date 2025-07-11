@@ -22,12 +22,36 @@ public class JwtProvider {
         Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
   }
 
+  public String createTempAccessToken(String provider, String providerId, String email) {
+    return createTempToken(
+        provider,
+        providerId,
+        email,
+        Duration.ofMinutes(jwtProperties.getAccessToken().getValidMinute()));
+  }
+
   public String createAccessToken(Long userId) {
     return createToken(userId, Duration.ofMinutes(jwtProperties.getAccessToken().getValidMinute()));
   }
 
   public String createRefreshToken() {
     return UUID.randomUUID().toString();
+  }
+
+  private String createTempToken(
+      String provider, String providerId, String email, Duration validity) {
+    Date now = new Date();
+    Date expiry = new Date(now.getTime() + validity.toMillis());
+
+    return Jwts.builder()
+        .setSubject("TEMP")
+        .setIssuedAt(now)
+        .setExpiration(expiry)
+        .claim("provider", provider)
+        .claim("providerId", providerId)
+        .claim("email", email)
+        .signWith(jwtSigningKey, SignatureAlgorithm.HS256)
+        .compact();
   }
 
   private String createToken(Long userId, Duration validity) {

@@ -5,5 +5,5 @@ import lombok.Builder;
 public class UserAuthResponseDto {
 
   @Builder
-  public record Token(String accessToken, String refreshToken) {}
+  public record Token(String accessToken, String refreshToken, boolean isRegistered) {}
 }
