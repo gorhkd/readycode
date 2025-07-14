@@ -11,13 +11,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
 @RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
+public class UserPrincipal implements UserDetails {
 
   private final UserProfile userProfile;
 
   @Override
   public String getUsername() {
-    return userProfile.getId().toString();
+    return userProfile.getPhoneNumber();
   }
 
   @Override

@@ -2,8 +2,9 @@ package com.ll.readycode.global.common.auth.jwt;
 
 import static com.ll.readycode.global.common.auth.jwt.JwtFilterExcludeProperties.EXCLUDE_URIS;
 
-import com.ll.readycode.global.common.auth.user.CustomUserDetails;
 import com.ll.readycode.global.common.auth.user.CustomUserDetailsService;
+import com.ll.readycode.global.common.auth.user.TempUserPrincipal;
+import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -41,15 +42,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       try {
         jwtProvider.validateToken(token);
-        Long userId = jwtProvider.getUserIdFromToken(token);
 
-        UserDetails userDetails =
-            customUserDetailsService.loadUserByUsername(String.valueOf(userId));
-        String role = ((CustomUserDetails) userDetails).getUserProfile().getRole().name();
+        Object claimsObject = jwtProvider.getClaimsFromToken(token);
+        Authentication auth = null;
 
-        Authentication auth =
-            new UsernamePasswordAuthenticationToken(
-                userDetails, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+        if (claimsObject instanceof Long userId) {
+          // 정식 발급 토큰일 경우
+          UserDetails userDetails =
+              customUserDetailsService.loadUserByUsername(String.valueOf(userId));
+          String role = ((UserPrincipal) userDetails).getUserProfile().getRole().name();
+
+          auth =
+              new UsernamePasswordAuthenticationToken(
+                  userDetails, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+
+        } else if (claimsObject instanceof TempUserPrincipal tempUserPrincipal) {
+          // 임시 발급 토큰일 경우
+          auth = new UsernamePasswordAuthenticationToken(tempUserPrincipal, null, List.of());
+        }
 
         SecurityContextHolder.getContext().setAuthentication(auth);
 
