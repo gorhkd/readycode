@@ -36,19 +36,18 @@ public class AuthServiceTest {
   void tokenReissueSuccessTest() {
 
     // given
-    String prevRefreshToken = "mock-prev-refresh-token";
     String newAccessToken = "mock-new-access-token";
+    String newRefreshToken = "mock-new-refresh-token";
 
-    when(jwtProvider.getUserIdFromToken(prevRefreshToken)).thenReturn(1L);
-    when(refreshTokenStore.get(1L)).thenReturn(Optional.of(prevRefreshToken));
+    when(refreshTokenStore.get(newRefreshToken)).thenReturn(Optional.of("1"));
     when(jwtProvider.createAccessToken(1L)).thenReturn(newAccessToken);
 
     // when
-    Token reissueResult = refreshTokenService.reissue(prevRefreshToken);
+    Token reissueResult = refreshTokenService.reissue(newRefreshToken);
 
     // then
     assertThat(newAccessToken).isEqualTo(reissueResult.accessToken());
-    assertThat(prevRefreshToken).isEqualTo(reissueResult.refreshToken());
+    assertThat(newRefreshToken).isEqualTo(reissueResult.refreshToken());
   }
 
   @DisplayName("JWT 토큰 재발급 실패 테스트 - Refresh 토큰이 유효하지 않을 경우")
@@ -93,11 +92,11 @@ public class AuthServiceTest {
 
     // when
     doNothing().when(jwtProvider).validateToken(validRefreshToken);
-    when(jwtProvider.getUserIdFromToken(validRefreshToken)).thenReturn(userId);
+    when(refreshTokenStore.get(validRefreshToken)).thenReturn(Optional.of(String.valueOf(userId)));
 
     // then
     refreshTokenService.delete(validRefreshToken);
-    verify(refreshTokenStore, times(1)).delete(userId);
+    verify(refreshTokenStore, times(1)).delete(validRefreshToken);
   }
 
   @DisplayName("로그아웃 실패 테스트 - Refresh 토큰이 누락되었을 경우")
@@ -140,7 +139,8 @@ public class AuthServiceTest {
     String refreshToken = "mock-refresh-token";
 
     // when
-    CustomException exception = assertThrows(CustomException.class, () -> refreshTokenService.delete(refreshToken));
+    CustomException exception =
+        assertThrows(CustomException.class, () -> refreshTokenService.delete(refreshToken));
 
     // then
     assertThat(ErrorCode.LOGOUT_ALREADY).isEqualTo(exception.getErrorCode());

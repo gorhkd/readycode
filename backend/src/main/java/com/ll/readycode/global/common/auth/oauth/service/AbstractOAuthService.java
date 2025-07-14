@@ -6,7 +6,6 @@ import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;
 import com.ll.readycode.global.common.auth.token.RefreshTokenStore;
 import com.ll.readycode.global.exception.CustomException;
-import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.client.RestTemplate;
 
 public abstract class AbstractOAuthService<T, U> implements OAuthService {
@@ -44,23 +43,9 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
       Long userId = userProfileService.getUserIdBySocialInfo(provider, providerId);
 
       String accessToken = jwtProvider.createAccessToken(userId);
-      String refreshToken = refreshTokenStore.get(userId).orElse(null);
+      String refreshToken = jwtProvider.createRefreshToken();
 
-      boolean needToCreate = (refreshToken == null);
-
-      // Redis에 Refresh 토큰이 존재하지 않을 경우, Refresh 토큰 생성 및 Redis 저장
-      if (!needToCreate) {
-        try {
-          jwtProvider.validateToken(refreshToken);
-        } catch (JwtException | IllegalArgumentException e) {
-          needToCreate = true;
-        }
-      }
-
-      if (needToCreate) {
-        refreshToken = jwtProvider.createRefreshToken();
-        refreshTokenStore.save(userId, refreshToken);
-      }
+      refreshTokenStore.save(refreshToken, userId);
 
       token =
           Token.builder()

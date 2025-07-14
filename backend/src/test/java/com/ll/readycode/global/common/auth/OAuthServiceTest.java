@@ -76,7 +76,7 @@ public class OAuthServiceTest {
 
     when(userProfileService.getUserIdBySocialInfo(provider, providerId)).thenReturn(1L);
     when(jwtProvider.createAccessToken(1L)).thenReturn(accessToken);
-    when(refreshTokenStore.get(1L)).thenReturn(Optional.of(refreshToken));
+    when(refreshTokenStore.get(refreshToken)).thenReturn(Optional.of("1L"));
 
     // when
     Token loginResult = kakaoOAuthService.login(authCode);
@@ -121,7 +121,7 @@ public class OAuthServiceTest {
 
     when(userProfileService.getUserIdBySocialInfo(provider, providerId)).thenReturn(1L);
     when(jwtProvider.createAccessToken(1L)).thenReturn(accessToken);
-    when(refreshTokenStore.get(1L)).thenReturn(Optional.of(refreshToken));
+    when(refreshTokenStore.get(refreshToken)).thenReturn(Optional.of("1L"));
 
     // when
     Token loginResult = googleOAuthService.login(authCode);
@@ -166,7 +166,7 @@ public class OAuthServiceTest {
 
     when(userProfileService.getUserIdBySocialInfo(provider, providerId)).thenReturn(1L);
     when(jwtProvider.createAccessToken(1L)).thenReturn(accessToken);
-    when(refreshTokenStore.get(1L)).thenReturn(Optional.of(refreshToken));
+    when(refreshTokenStore.get(refreshToken)).thenReturn(Optional.of("1L"));
 
     // when
     Token loginResult = naverOAuthService.login(authCode);
