@@ -2,8 +2,10 @@ package com.ll.readycode.api.userprofiles.controller;
 
 import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
+import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
 import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.user.TempUserPrincipal;
+import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +28,15 @@ public class UserProfileController {
     Token tokenInfo = userProfileService.signup(tempUserPrincipal, signupRequest);
 
     return ResponseEntity.ok(SuccessResponse.of(tokenInfo));
+  }
+
+  @PatchMapping("/me")
+  public ResponseEntity<SuccessResponse<Void>> updateProfile(
+      @AuthenticationPrincipal UserPrincipal userPrincipal,
+      @RequestBody UpdateProfile updateProfile) {
+
+    userProfileService.update(userPrincipal, updateProfile);
+
+    return ResponseEntity.ok(SuccessResponse.of("사용자 정보가 성공적으로 수정되었습니다.", null));
   }
 }

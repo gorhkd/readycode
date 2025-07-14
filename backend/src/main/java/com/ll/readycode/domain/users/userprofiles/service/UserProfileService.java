@@ -1,17 +1,19 @@
 package com.ll.readycode.domain.users.userprofiles.service;
 
+import static com.ll.readycode.global.exception.ErrorCode.INVALID_TOKEN;
 import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
 
 import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
+import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
 import com.ll.readycode.domain.users.userprofiles.repository.UserProfileRepository;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.user.TempUserPrincipal;
+import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.exception.CustomException;
-import com.ll.readycode.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +30,7 @@ public class UserProfileService {
 
     // 임시 토큰이 유효하지 않을 경우, 401에러
     if (tempUserPrincipal == null) {
-      throw new CustomException(ErrorCode.INVALID_TOKEN);
+      throw new CustomException(INVALID_TOKEN);
     }
 
     UserAuth userAuth =
@@ -66,5 +68,16 @@ public class UserProfileService {
             .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
     return userProfile.getId();
+  }
+
+  @Transactional
+  public void update(UserPrincipal userPrincipal, UpdateProfile updateProfile) {
+
+    // 유효하지 않는 토큰일 경우, 401 에러 반환
+    if (userPrincipal == null) {
+      throw new CustomException(INVALID_TOKEN);
+    }
+
+    userPrincipal.getUserProfile().updateNickname(updateProfile.nickname());
   }
 }
