@@ -28,7 +28,10 @@ public class UserProfile extends BaseEntity {
   private List<UserAuth> userAuths;
 
   @Builder
-  public UserProfile(UserRole role) {
+  public UserProfile(String phoneNumber, String nickname, UserPurpose purpose, UserRole role) {
+    this.phoneNumber = phoneNumber;
+    this.nickname = nickname;
+    this.purpose = purpose;
     this.role = role;
     this.userAuths = new ArrayList<>();
   }
@@ -37,11 +40,8 @@ public class UserProfile extends BaseEntity {
     this.nickname = nickname;
   }
 
-  public void updatePurpose(UserPurpose purpose) {
-    this.purpose = purpose;
-  }
-
   public void addUserAuth(UserAuth userAuth) {
     userAuths.add(userAuth);
+    userAuth.updateUserProfile(this);
   }
 }

@@ -2,12 +2,16 @@ package com.ll.readycode.domain.users.userprofiles.service;
 
 import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
 
+import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
+import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
-import com.ll.readycode.domain.users.userauths.repository.UserAuthRepository;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
 import com.ll.readycode.domain.users.userprofiles.repository.UserProfileRepository;
+import com.ll.readycode.global.common.auth.jwt.JwtProvider;
+import com.ll.readycode.global.common.auth.user.TempUserPrincipal;
 import com.ll.readycode.global.exception.CustomException;
+import com.ll.readycode.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,21 +21,40 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserProfileService {
 
   private final UserProfileRepository userProfileRepository;
-  private final UserAuthRepository userAuthRepository;
+  private final JwtProvider jwtProvider;
 
   @Transactional
-  public Long createProfileWithAuth(String email, String provider, String providerId) {
+  public Token signup(TempUserPrincipal tempUserPrincipal, Signup signupRequest) {
 
-    UserAuth savedAuth =
-        userAuthRepository.save(
-            UserAuth.builder().email(email).provider(provider).providerId(providerId).build());
+    // 임시 토큰이 유효하지 않을 경우, 401에러
+    if (tempUserPrincipal == null) {
+      throw new CustomException(ErrorCode.INVALID_TOKEN);
+    }
 
-    UserProfile userProfile = UserProfile.builder().role(UserRole.USER).build();
-    userProfile.addUserAuth(savedAuth);
+    UserAuth userAuth =
+        UserAuth.builder()
+            .email(tempUserPrincipal.email())
+            .provider(tempUserPrincipal.provider())
+            .providerId(tempUserPrincipal.providerId())
+            .build();
 
-    userProfileRepository.save(userProfile);
+    UserProfile userProfile =
+        UserProfile.builder()
+            .phoneNumber(signupRequest.phoneNumber())
+            .nickname(signupRequest.nickname())
+            .purpose(signupRequest.purpose())
+            .role(UserRole.USER)
+            .build();
 
-    return userProfile.getId();
+    userProfile.addUserAuth(userAuth);
+
+    UserProfile savedProfile = userProfileRepository.save(userProfile);
+
+    return Token.builder()
+        .accessToken(jwtProvider.createAccessToken(savedProfile.getId()))
+        .refreshToken(jwtProvider.createRefreshToken())
+        .isRegistered(true)
+        .build();
   }
 
   @Transactional(readOnly = true)
