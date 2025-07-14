@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
+import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;

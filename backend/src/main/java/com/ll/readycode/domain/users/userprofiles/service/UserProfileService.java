@@ -2,7 +2,7 @@ package com.ll.readycode.domain.users.userprofiles.service;
 
 import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
 
-import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
+import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;

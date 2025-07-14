@@ -2,7 +2,7 @@ package com.ll.readycode.global.common.auth.token;
 
 import static com.ll.readycode.global.exception.ErrorCode.*;
 
-import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
+import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
