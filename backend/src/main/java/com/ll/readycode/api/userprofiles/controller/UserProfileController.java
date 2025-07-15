@@ -3,6 +3,7 @@ package com.ll.readycode.api.userprofiles.controller;
 import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
 import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
+import com.ll.readycode.api.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial;
 import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.user.TempUserPrincipal;
 import com.ll.readycode.global.common.auth.user.UserPrincipal;
@@ -28,6 +29,15 @@ public class UserProfileController {
     Token tokenInfo = userProfileService.signup(tempUserPrincipal, signupRequest);
 
     return ResponseEntity.ok(SuccessResponse.of(tokenInfo));
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<SuccessResponse<ProfileWithSocial>> getProfileWithSocialInfo(
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+    ProfileWithSocial profileInfo = userProfileService.getProfileWithSocialInfo(userPrincipal);
+
+    return ResponseEntity.ok(SuccessResponse.of(profileInfo));
   }
 
   @PatchMapping("/me")

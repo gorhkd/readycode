@@ -6,6 +6,8 @@ import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
 import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
 import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
+import com.ll.readycode.api.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial;
+import com.ll.readycode.api.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial.Social;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
@@ -79,5 +81,26 @@ public class UserProfileService {
     }
 
     userPrincipal.getUserProfile().updateNickname(updateProfile.nickname());
+  }
+
+  @Transactional(readOnly = true)
+  public ProfileWithSocial getProfileWithSocialInfo(UserPrincipal userPrincipal) {
+
+    UserProfile userProfile = userPrincipal.getUserProfile();
+    ProfileWithSocial profileWithSocial =
+        ProfileWithSocial.builder()
+            .nickname(userProfile.getNickname())
+            .phoneNumber(userProfile.getPhoneNumber())
+            .build();
+
+    for (UserAuth userAuth : userProfile.getUserAuths()) {
+
+      Social social =
+          Social.builder().provider(userAuth.getProvider()).email(userAuth.getEmail()).build();
+
+      profileWithSocial.addSocial(social);
+    }
+
+    return profileWithSocial;
   }
 }
