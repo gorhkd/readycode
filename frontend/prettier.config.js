@@ -12,4 +12,4 @@ const config = {
   trailingComma: 'all',
 }
 
-export default config;
+export default config
