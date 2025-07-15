@@ -42,7 +42,7 @@ public class TemplateController {
         SuccessResponse.of("성공적으로 게시물 상세 정보를 조회했습니다.", TemplateDetailResponse.of(template)));
   }
 
-  @Operation(summary = "템플릿 생성", description = "템플릿을 새로 생성합니다.")
+  @Operation(summary = "템플릿 생성", description = "템플릿을 생성합니다.")
   @PostMapping
   public ResponseEntity<SuccessResponse<TemplateResponse>> createTemplate(
       @Valid @RequestBody TemplateCreateRequest request) {
