@@ -49,4 +49,13 @@ public class UserProfileController {
 
     return ResponseEntity.ok(SuccessResponse.of("사용자 정보가 성공적으로 수정되었습니다.", null));
   }
+
+  @DeleteMapping("/me")
+  public ResponseEntity<SuccessResponse<Void>> deleteProfile(
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+    userProfileService.delete(userPrincipal);
+
+    return ResponseEntity.ok(SuccessResponse.of("회원 탈퇴가 성공적으로 처리되었습니다.", null));
+  }
 }
