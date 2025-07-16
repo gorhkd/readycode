@@ -1,4 +1,4 @@
-package com.ll.readycode.api.userprofiles.dto.response;
+package com.ll.readycode.api.users.userprofiles.dto.response;
 
 import java.util.ArrayList;
 import java.util.List;

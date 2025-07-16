@@ -1,9 +1,9 @@
-package com.ll.readycode.api.userprofiles.controller;
+package com.ll.readycode.api.users.userprofiles.controller;
 
-import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
-import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
-import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
-import com.ll.readycode.api.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial;
+import com.ll.readycode.api.users.userauths.dto.response.UserAuthResponseDto.Token;
+import com.ll.readycode.api.users.userprofiles.dto.request.UserProfileRequestDto.Signup;
+import com.ll.readycode.api.users.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
+import com.ll.readycode.api.users.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial;
 import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.user.TempUserPrincipal;
 import com.ll.readycode.global.common.auth.user.UserPrincipal;

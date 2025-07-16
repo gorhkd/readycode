@@ -1,4 +1,4 @@
-package com.ll.readycode.api.userprofiles.dto.request;
+package com.ll.readycode.api.users.userprofiles.dto.request;
 
 import com.ll.readycode.domain.users.userprofiles.entity.UserPurpose;
 import jakarta.validation.constraints.NotBlank;

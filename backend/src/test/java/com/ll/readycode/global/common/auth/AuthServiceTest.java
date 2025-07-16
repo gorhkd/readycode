@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
+import com.ll.readycode.api.users.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.token.RefreshTokenService;
 import com.ll.readycode.global.common.auth.token.RefreshTokenStore;

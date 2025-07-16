@@ -1,6 +1,6 @@
 package com.ll.readycode.global.common.auth.oauth.service;
 
-import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
+import com.ll.readycode.api.users.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;

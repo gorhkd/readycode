@@ -3,11 +3,11 @@ package com.ll.readycode.domain.users.userprofiles.service;
 import static com.ll.readycode.global.exception.ErrorCode.INVALID_TOKEN;
 import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
 
-import com.ll.readycode.api.userauths.dto.response.UserAuthResponseDto.Token;
-import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.Signup;
-import com.ll.readycode.api.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
-import com.ll.readycode.api.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial;
-import com.ll.readycode.api.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial.Social;
+import com.ll.readycode.api.users.userauths.dto.response.UserAuthResponseDto.Token;
+import com.ll.readycode.api.users.userprofiles.dto.request.UserProfileRequestDto.Signup;
+import com.ll.readycode.api.users.userprofiles.dto.request.UserProfileRequestDto.UpdateProfile;
+import com.ll.readycode.api.users.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial;
+import com.ll.readycode.api.users.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial.Social;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserRole;

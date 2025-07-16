@@ -1,4 +1,4 @@
-package com.ll.readycode.api.userauths.dto.response;
+package com.ll.readycode.api.users.userauths.dto.response;
 
 import lombok.Builder;
 
