@@ -58,4 +58,13 @@ public class UserProfileController {
 
     return ResponseEntity.ok(SuccessResponse.of("회원 탈퇴가 성공적으로 처리되었습니다.", null));
   }
+
+  @PostMapping("/me/restore")
+  public ResponseEntity<SuccessResponse<Void>> restoreProfile(
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+    userProfileService.restore(userPrincipal);
+
+    return ResponseEntity.ok(SuccessResponse.of("회원 탈퇴 요청을 성공적으로 취소했습니다.", null));
+  }
 }

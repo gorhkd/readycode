@@ -1,7 +1,6 @@
 package com.ll.readycode.domain.users.userprofiles.service;
 
-import static com.ll.readycode.global.exception.ErrorCode.INVALID_TOKEN;
-import static com.ll.readycode.global.exception.ErrorCode.USER_NOT_FOUND;
+import static com.ll.readycode.global.exception.ErrorCode.*;
 
 import com.ll.readycode.api.users.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.api.users.userprofiles.dto.request.UserProfileRequestDto.Signup;
@@ -114,5 +113,23 @@ public class UserProfileService {
 
     UserProfile userProfile = userPrincipal.getUserProfile();
     userProfile.updateDeletedStatus(true);
+  }
+
+  @Transactional
+  public void restore(UserPrincipal userPrincipal) {
+
+    // 유효하지 않는 토큰일 경우, 401 에러 반환
+    if (userPrincipal == null) {
+      throw new CustomException(INVALID_TOKEN);
+    }
+
+    UserProfile userProfile = userPrincipal.getUserProfile();
+
+    // 해당 회원이 이미 활성화 되어있을 경우, 400 에러 반환
+    if (!userProfile.isDeleted()) {
+      throw new CustomException(ALREADY_ACTIVE_USER);
+    }
+
+    userProfile.updateDeletedStatus(false);
   }
 }
