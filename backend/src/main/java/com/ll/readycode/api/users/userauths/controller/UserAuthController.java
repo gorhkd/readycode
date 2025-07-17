@@ -1,9 +1,9 @@
-package com.ll.readycode.api.controller.userauths;
+package com.ll.readycode.api.users.userauths.controller;
 
-import com.ll.readycode.api.dto.userauths.UserAuthRequestDto.Logout;
-import com.ll.readycode.api.dto.userauths.UserAuthRequestDto.OAuthLogin;
-import com.ll.readycode.api.dto.userauths.UserAuthRequestDto.TokenReissue;
-import com.ll.readycode.api.dto.userauths.UserAuthResponseDto.Token;
+import com.ll.readycode.api.users.userauths.dto.request.UserAuthRequestDto.Logout;
+import com.ll.readycode.api.users.userauths.dto.request.UserAuthRequestDto.OAuthLogin;
+import com.ll.readycode.api.users.userauths.dto.request.UserAuthRequestDto.TokenReissue;
+import com.ll.readycode.api.users.userauths.dto.response.UserAuthResponseDto.Token;
 import com.ll.readycode.global.common.auth.oauth.factory.OAuthServiceFactory;
 import com.ll.readycode.global.common.auth.oauth.service.OAuthService;
 import com.ll.readycode.global.common.auth.token.RefreshTokenService;
