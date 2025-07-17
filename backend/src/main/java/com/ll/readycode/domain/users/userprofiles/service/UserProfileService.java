@@ -85,6 +85,11 @@ public class UserProfileService {
   @Transactional(readOnly = true)
   public ProfileWithSocial getProfileWithSocialInfo(UserPrincipal userPrincipal) {
 
+    // 유효하지 않는 토큰일 경우, 401 에러 반환
+    if (userPrincipal == null) {
+      throw new CustomException(INVALID_TOKEN);
+    }
+
     UserProfile userProfile = userPrincipal.getUserProfile();
     ProfileWithSocial profileWithSocial =
         ProfileWithSocial.builder()
