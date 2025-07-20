@@ -13,6 +13,7 @@ import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
 
 import App from './App.tsx'
+import QueryProvider from '@/providers/QueryProvider.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -51,7 +52,9 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <RouterProvider router={router} />
+      <QueryProvider>
+        <RouterProvider router={router} />
+      </QueryProvider>
     </StrictMode>,
   )
 }
