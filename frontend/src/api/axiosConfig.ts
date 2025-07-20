@@ -37,8 +37,10 @@ axiosInstance.interceptors.response.use(
         alert(error.response.data.message)
       }
       console.error('에러 내용: ', error.response?.data)
+      return Promise.reject(error.response?.data)
     } else {
       console.error('에러 내용: 알 수 없는 API 에러가 발생했습니다.')
+      return Promise.reject(error)
     }
   },
 )
