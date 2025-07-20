@@ -17,7 +17,7 @@ const axiosInstance = axios.create({
 })
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = '임시 토큰'
+  const token = 'TEMP_FAKE_TOKEN'
   if (token) {
     config.headers.Authorization = token
   }
