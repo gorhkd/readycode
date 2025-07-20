@@ -1,5 +1,12 @@
 import axios, { type AxiosResponse } from 'axios'
 
+interface APIResponse<T = never> {
+  status: number
+  message: string
+  code?: string
+  data?: T
+}
+
 const axiosInstance = axios.create({
   // baseURL: import.meta.env.VITE_API_URL,
   baseURL: '/api',
@@ -9,10 +16,6 @@ const axiosInstance = axios.create({
   },
 })
 
-interface APIResponse<T = never> {
-  metaData: any
-  data: T
-}
 
 const api = {
   get: async <T = never>(url: string, config?: object): Promise<AxiosResponse<APIResponse<T>>> =>
