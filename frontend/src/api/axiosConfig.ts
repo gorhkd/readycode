@@ -32,11 +32,24 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError<APIResponse>) => {
     const isUnauthorized = error.status === 401
 
-    if (error.response?.data) {
+    if (error.response) {
+      const config = error.response.config
+      const data = error.response.data
+
+      console.error(
+        config.method?.toUpperCase(),
+        config.url,
+        '\n',
+        '파라미터: ',
+        config.params,
+        '\n',
+        '에러내용: ',
+        data,
+      )
+
       if (isUnauthorized) {
         alert(error.response.data.message)
       }
-      console.error('에러 내용: ', error.response?.data)
       return Promise.reject(error.response?.data)
     } else {
       console.error('에러 내용: 알 수 없는 API 에러가 발생했습니다.')
