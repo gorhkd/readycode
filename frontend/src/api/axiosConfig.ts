@@ -16,6 +16,13 @@ const axiosInstance = axios.create({
   },
 })
 
+axiosInstance.interceptors.request.use((config) => {
+  const token = '임시 토큰'
+  if (token) {
+    config.headers.Authorization = token
+  }
+  return config
+})
 
 const api = {
   get: async <T = never>(url: string, config?: object): Promise<AxiosResponse<APIResponse<T>>> =>
