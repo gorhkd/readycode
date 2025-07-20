@@ -1,9 +1,9 @@
 import axios, { type AxiosResponse } from 'axios'
 
 const axiosInstance = axios.create({
-  timeout: 10000,
   // baseURL: import.meta.env.VITE_API_URL,
   baseURL: '/api',
+  timeout: 1000 * 10,
   headers: {
     'Content-Type': 'application/json',
   },
