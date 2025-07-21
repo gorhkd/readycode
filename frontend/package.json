@@ -10,7 +10,8 @@
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier",
-    "check": "prettier --write . && eslint --fix"
+    "check": "prettier --write . && eslint --fix",
+    "generate-dto": "openapi-typescript http://localhost:8080/v3/api-docs --output src/api/dto.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.6",
