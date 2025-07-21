@@ -1,6 +1,6 @@
 package com.ll.readycode.global.common.auth.oauth.service;
 
-import com.ll.readycode.domain.users.userauths.repository.UserAuthRepository;
+import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.dto.GoogleTokenResponse;
 import com.ll.readycode.global.common.auth.oauth.dto.GoogleUserInfo;
@@ -19,10 +19,10 @@ public class GoogleOAuthService extends AbstractOAuthService<GoogleTokenResponse
 
   protected GoogleOAuthService(
       OAuthProperties oAuthProperties,
-      UserAuthRepository userAuthRepository,
+      UserProfileService userProfileService,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
-    super(oAuthProperties, userAuthRepository, jwtProvider, refreshTokenStore);
+    super(oAuthProperties, userProfileService, jwtProvider, refreshTokenStore);
     this.provider = "google";
   }
 
