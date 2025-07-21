@@ -17,14 +17,6 @@ public class RefreshTokenService {
 
   public Token reissue(String refreshToken) {
 
-    // Refresh 토큰 유효성 체크 실패 시, 401에러 반환
-    try {
-      jwtProvider.validateToken(refreshToken);
-
-    } catch (Exception e) {
-      throw new CustomException(INVALID_TOKEN);
-    }
-
     // Redis에서 userId에 해당하는 Refresh 토큰이 존재하지 않을 경우, 401에러 반환
     String userIdStr =
         refreshTokenStore.get(refreshToken).orElseThrow(() -> new CustomException(EXPIRED_TOKEN));
@@ -40,14 +32,6 @@ public class RefreshTokenService {
     // Refresh 토큰이 누락되었을 경우, 400에러 반환
     if (refreshToken == null) {
       throw new CustomException(MISSING_REFRESH_TOKEN);
-    }
-
-    // Refresh 토큰 유효성 체크 실패 시, 401에러 반환
-    try {
-      jwtProvider.validateToken(refreshToken);
-
-    } catch (Exception e) {
-      throw new CustomException(INVALID_TOKEN);
     }
 
     // Redis에 Refresh 토큰에 해당하는 userId가 존재하지 않을 경우, 403에러 반환
