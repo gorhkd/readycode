@@ -1,6 +1,6 @@
 package com.ll.readycode.global.common.auth;
 
-import com.ll.readycode.domain.users.userauths.repository.UserAuthRepository;
+import com.ll.readycode.domain.users.userprofiles.service.UserProfileService;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.dto.*;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;
@@ -85,12 +85,12 @@ public class OAuthTestHelper {
 
   public static KakaoOAuthService initKakaoOAuthService(
       OAuthProperties oAuthProperties,
-      UserAuthRepository userAuthRepository,
+      UserProfileService userProfileService,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
 
     return new KakaoOAuthService(
-        oAuthProperties, userAuthRepository, jwtProvider, refreshTokenStore) {
+        oAuthProperties, userProfileService, jwtProvider, refreshTokenStore) {
 
       @Override
       protected KakaoTokenResponse getAccessToken(String authCode) {
@@ -136,12 +136,12 @@ public class OAuthTestHelper {
 
   public static GoogleOAuthService initGoogleOAuthService(
       OAuthProperties oAuthProperties,
-      UserAuthRepository userAuthRepository,
+      UserProfileService userProfileService,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
 
     return new GoogleOAuthService(
-        oAuthProperties, userAuthRepository, jwtProvider, refreshTokenStore) {
+        oAuthProperties, userProfileService, jwtProvider, refreshTokenStore) {
 
       @Override
       protected GoogleTokenResponse getAccessToken(String authCode) {
@@ -184,12 +184,12 @@ public class OAuthTestHelper {
 
   public static NaverOAuthService initNaverOAuthService(
       OAuthProperties oAuthProperties,
-      UserAuthRepository userAuthRepository,
+      UserProfileService userProfileService,
       JwtProvider jwtProvider,
       RefreshTokenStore refreshTokenStore) {
 
     return new NaverOAuthService(
-        oAuthProperties, userAuthRepository, jwtProvider, refreshTokenStore) {
+        oAuthProperties, userProfileService, jwtProvider, refreshTokenStore) {
 
       @Override
       protected NaverTokenResponse getAccessToken(String authCode) {

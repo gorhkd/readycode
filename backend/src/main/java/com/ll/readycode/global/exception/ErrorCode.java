@@ -21,6 +21,8 @@ public enum ErrorCode {
   // 사용자 프로필 (UserProfile)
   PROFILE_ALREADY_EXISTS(HttpStatus.CONFLICT, "UP001", "이미 프로필이 존재합니다."),
   PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "UP002", "프로필 정보를 찾을 수 없습니다."),
+  INVALID_USAGE_PURPOSE(HttpStatus.BAD_REQUEST, "UP003", "존재하지 않는 가입 목적입니다."),
+  ALREADY_ACTIVE_USER(HttpStatus.BAD_REQUEST, "UP004", "이미 활성화된 사용자입니다."),
 
   // 인증/인가
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A001", "인증이 필요합니다."),

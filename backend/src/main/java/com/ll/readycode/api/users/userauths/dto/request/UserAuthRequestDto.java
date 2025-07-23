@@ -1,4 +1,4 @@
-package com.ll.readycode.api.dto.userauths;
+package com.ll.readycode.api.users.userauths.dto.request;
 
 public class UserAuthRequestDto {
 
