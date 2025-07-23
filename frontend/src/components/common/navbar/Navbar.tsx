@@ -3,6 +3,7 @@ import DrawerToggleButton from '@/components/common/navbar/DrawerToggleButton.ts
 import DrawerSidebar from '@/components/common/navbar/DrawerSidebar.tsx'
 import { navLinks } from '@/components/common/navbar/navLinks.ts'
 import { Link } from '@tanstack/react-router'
+import ThemeToggleButton from '@/components/common/navbar/ThemeToggleButton.tsx'
 
 export default function Navbar() {
   return (
@@ -22,6 +23,7 @@ export default function Navbar() {
             </div>
 
             <div className="hidden flex-none lg:block">
+              <ThemeToggleButton />
               <ul className="menu menu-horizontal">
                 {navLinks.map((link) => (
                   <li>
