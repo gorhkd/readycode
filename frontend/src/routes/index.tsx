@@ -7,9 +7,31 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   const cards = new Array(12).fill(1)
+  const leftFilters = ['패치키 구조', '기능']
+  const rightFilters = ['최신순', '인기순']
+
   return (
     <div className="text-center">
       <main className="min-h-screen flex flex-col items-center justify-center m-auto max-w-[1600px]">
+        <div className="flex justify-between w-full">
+          <div className="flex gap-4">
+            {leftFilters.map((word, i) => (
+              <button key={i} className="btn btn-ghost">
+                {word}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-4">
+            {rightFilters.map((word, i) => (
+              <button key={i} className="btn btn-ghost">
+                {word}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="divider m-0" />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
           {cards.map((_, i) => (
             <Card key={i} />
