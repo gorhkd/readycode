@@ -1,9 +1,9 @@
-import { EyeIcon, StarHalfIcon, StarIcon } from '@phosphor-icons/react'
+import { StarHalfIcon, StarIcon } from '@phosphor-icons/react'
 import logo from '@/logo.svg'
 
 export default function Card() {
   return (
-    <div className="card bg-base-100 w-full shadow-sm">
+    <div className="card bg-base-100 w-full">
       <figure className="bg-base-200 aspect-[4/3] overflow-hidden">
         <img
           src={logo}
@@ -13,29 +13,27 @@ export default function Card() {
       </figure>
       <div className="card-body">
         <h2 className="card-title text-primary-content">
-          Card Title
-          <div className="badge badge-primary">NEW</div>
+          카드 제목
+          <div className="badge badge-primary badge-sm">NEW</div>
         </h2>
-        <p className="text-left text-primary-content">짧은 설명글</p>
+        <p className="text-left text-primary-content/70">Lorem ipsum dolor</p>
         <div className="card-actions">
-          <div className="badge badge-soft badge-warning">
+          <div className="flex items-center gap-1">
             <div className="flex gap-0">
-              <StarIcon size={12} weight="fill" className="fill-yellow-400" />
-              <StarIcon size={12} weight="fill" className="fill-yellow-400" />
-              <StarIcon size={12} weight="fill" className="fill-yellow-400" />
-              <StarIcon size={12} weight="fill" className="fill-yellow-400" />
-              <StarHalfIcon size={12} weight="fill" className="fill-yellow-400" />
+              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
+              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
+              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
+              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
+              <StarHalfIcon size={14} weight="fill" className="fill-yellow-400" />
             </div>
-            <span>(1,000)</span>
+            <span className="text-primary-content/70">(1,000)</span>
           </div>
-          <div className="badge badge-outline badge-warning">
+
+          <div className="badge badge-soft badge-warning badge-sm">
             <StarIcon size={12} weight="fill" className="fill-yellow-400" />
             <span>4.5</span>
           </div>
-          <div className="badge badge-ghost">
-            <EyeIcon size={12} />
-            500
-          </div>
+          <div className="badge badge-sm badge-ghost text-primary-content/70">2024년 1월 1일</div>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import Card from '@/components/templates/Card.tsx'
+import { FadersHorizontalIcon } from '@phosphor-icons/react'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -14,7 +15,8 @@ function Home() {
     <div className="text-center">
       <main className="min-h-screen flex flex-col items-center justify-center m-auto max-w-[1600px]">
         <div className="flex justify-between w-full">
-          <div className="flex gap-4">
+          <div className="flex justify-center items-center gap-4">
+            <FadersHorizontalIcon size={20} />
             {leftFilters.map((word, i) => (
               <button key={i} className="btn btn-ghost">
                 {word}
@@ -23,7 +25,7 @@ function Home() {
           </div>
           <div className="flex gap-4">
             {rightFilters.map((word, i) => (
-              <button key={i} className="btn btn-ghost">
+              <button className="btn btn-ghost" key={i}>
                 {word}
               </button>
             ))}
@@ -32,7 +34,7 @@ function Home() {
 
         <div className="divider m-0" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
           {cards.map((_, i) => (
             <Card key={i} />
           ))}
