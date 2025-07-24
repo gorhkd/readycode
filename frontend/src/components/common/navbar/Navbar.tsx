@@ -10,7 +10,7 @@ export default function Navbar() {
     <header className="drawer fixed z-50">
       <DrawerToggle />
       <div className="drawer-content flex flex-col">
-        <nav className="navbar navbar-custom bg-base-300 shadow-sm w-full">
+        <nav className="navbar bg-base-300 text-white shadow-sm w-full">
           <div className="mx-auto w-full max-w-[1920px] px-4 flex items-center justify-between">
             <div className="flex-none lg:hidden">
               <DrawerToggleButton />

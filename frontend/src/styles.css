@@ -21,8 +21,8 @@ code {
     monospace;
 }
 
-.navbar-custom {
-    @apply bg-[#15191e] text-white
+html[data-theme="bumblebee"] .navbar {
+    @apply bg-[#252f3b]
 }
 
 .card-body {
