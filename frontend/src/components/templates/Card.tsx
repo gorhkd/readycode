@@ -28,11 +28,6 @@ export default function Card() {
             </div>
             <span className="text-primary-content/70">(1,000)</span>
           </div>
-
-          <div className="badge badge-soft badge-warning badge-sm">
-            <StarIcon size={12} weight="fill" className="fill-yellow-400" />
-            <span>4.5</span>
-          </div>
           <div className="badge badge-sm badge-ghost text-primary-content/70">2024년 1월 1일</div>
         </div>
       </div>
