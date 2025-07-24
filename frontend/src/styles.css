@@ -21,6 +21,10 @@ code {
     monospace;
 }
 
+.navbar-custom {
+    @apply bg-[#15191e] text-white
+}
+
 .card-body {
     @apply py-4
 }
