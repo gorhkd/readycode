@@ -12,8 +12,6 @@ function Home() {
   const rightFilters = ['최신순', '인기순']
 
   return (
-    <div className="text-center">
-      <main className="min-h-screen flex flex-col items-center justify-center m-auto max-w-[1600px]">
         <div className="flex justify-between w-full">
           <div className="flex justify-center items-center gap-1">
             <FadersHorizontalIcon size={20} />
@@ -30,6 +28,7 @@ function Home() {
               </button>
             ))}
           </div>
+    <main className="flex flex-col items-center justify-center">
         </div>
 
         <div className="divider m-0" />
@@ -39,7 +38,6 @@ function Home() {
             <Card key={i} />
           ))}
         </div>
-      </main>
-    </div>
+    </main>
   )
 }
