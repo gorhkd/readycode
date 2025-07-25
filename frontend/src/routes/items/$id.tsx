@@ -21,7 +21,7 @@ function ItemDetail() {
         <span>{id}</span>
       </div>
       <CardDetail />
-      <h3 className="font-bold">리뷰</h3>
+      <h3 className="font-bold text-lg">리뷰</h3>
       <div className="flex items-center gap-2">
         <StarRating />
         <StarRatingCount count={1000} />

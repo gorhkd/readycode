@@ -6,7 +6,7 @@ import { dummyText } from '@/components/common/dummyText.ts'
 export default function Review() {
   return (
     <li className="list-row">
-      <div className="size-10 rounded-box">
+      <div className="size-10 rounded-selector">
         <ImagePlaceholder />
       </div>
       <div>
@@ -14,7 +14,7 @@ export default function Review() {
         <StarRating />
         <div className="text-xs uppercase font-light text-base-content/60">2024년 1월 1 월</div>
       </div>
-      <p className="list-col-wrap text-xs">{dummyText}</p>
+      <p className="list-col-wrap text-sm text-base-content/80">{dummyText}</p>
       <button className="btn btn-square btn-ghost">
         <ThumbsUpIcon />
       </button>
