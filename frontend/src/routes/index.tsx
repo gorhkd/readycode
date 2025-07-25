@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import Card from '@/components/templates/Card.tsx'
 import { FadersHorizontalIcon } from '@phosphor-icons/react'
 
@@ -12,34 +12,34 @@ function Home() {
   const rightFilters = ['최신순', '인기순']
 
   return (
-        <div className="flex justify-between w-full">
-          <div className="flex justify-center items-center gap-1">
-            <FadersHorizontalIcon size={20} />
-            {leftFilters.map((word, i) => (
-              <button key={i} className="btn btn-ghost">
-                {word}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-1">
-            {rightFilters.map((word, i) => (
-              <button className="btn btn-ghost" key={i}>
-                {word}
-              </button>
-            ))}
-          </div>
     <main className="flex flex-col items-center justify-center">
-        </div>
-
-        <div className="divider m-0" />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
-          {cards.map((_, i) => (
+      <div className="flex justify-between w-full">
+        <div className="flex justify-center items-center gap-1">
+          <FadersHorizontalIcon size={20} />
+          {leftFilters.map((word, i) => (
+            <button key={i} className="btn btn-ghost">
+              {word}
+            </button>
           ))}
         </div>
+        <div className="flex gap-1">
+          {rightFilters.map((word, i) => (
+            <button className="btn btn-ghost" key={i}>
+              {word}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="divider m-0" />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full">
+        {cards.map((_, i) => (
           <Link key={i} to={`items/${i}`}>
             <Card />
           </Link>
+        ))}
+      </div>
     </main>
   )
 }
