@@ -1,15 +1,11 @@
-import logo from '@/logo.svg'
 import StarRating from '@/components/templates/StarRating.tsx'
+import ImagePlaceholder from '@/components/common/ImagePlaceholder.tsx'
 
 export default function Card() {
   return (
     <div className="card bg-base-100 w-full overflow-hidden">
       <figure className="bg-base-200 aspect-[4/3] overflow-hidden">
-        <img
-          src={logo}
-          className="w-full h-full object-cover animate-[spin_20s_linear_infinite]"
-          alt="logo"
-        />
+        <ImagePlaceholder />
       </figure>
       <div className="card-body">
         <h2 className="card-title text-primary-content">
