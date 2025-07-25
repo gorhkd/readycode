@@ -12,8 +12,14 @@ function ItemDetail() {
   const { id } = Route.useParams()
 
   return (
-    <div className="flex flex-col gap-8">
-      <span>Home | Template | {id}</span>
+    <div className="flex flex-col py-4 gap-8">
+      <div className="flex gap-4 text-base-content/50">
+        <span>Home</span>
+        <span>/</span>
+        <span>Template</span>
+        <span>/</span>
+        <span>{id}</span>
+      </div>
       <CardDetail />
       <h3 className="font-bold">리뷰</h3>
       <div className="flex items-center gap-2">

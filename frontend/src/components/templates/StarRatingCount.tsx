@@ -3,5 +3,5 @@ interface StarRatingCountProps {
 }
 
 export default function StarRatingCount({ count }: StarRatingCountProps) {
-  return <span className="text-primary-content/70">({count})</span>
+    return <span className="text-base-content/40">({count})</span>
 }

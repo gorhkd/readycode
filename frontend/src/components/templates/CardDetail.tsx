@@ -12,9 +12,9 @@ export default function CardDetail() {
         <StarRating />
         <div className="flex flex-col gap-2">
           <h2 className="text-xl font-bold">템플릿 제목</h2>
-          <p className="text-primary-content/40 text-sm">2024년 1월 1일</p>
+          <p className="text-base-content/40 text-sm">2024년 1월 1일</p>
         </div>
-        <p className="text-secondary-content leading-[1.75]">{dummyText}</p>
+        <p className="text-base-content/80 leading-[1.75]">{dummyText}</p>
 
         <div className="flex gap-1">
           <button className="btn btn-wide btn-success">구매</button>
@@ -27,7 +27,7 @@ export default function CardDetail() {
 
         <div className="flex flex-col gap-4">
           <h3 className="font-bold">기술 스택</h3>
-          <ul className="list-disc pl-4 text-secondary-content">
+          <ul className="list-disc pl-4 text-base-content/70">
             <li className="pl-2">React</li>
             <li className="pl-2">React</li>
             <li className="pl-2">React</li>
