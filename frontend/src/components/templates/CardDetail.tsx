@@ -2,6 +2,7 @@ import ImageCarousel from '@/components/templates/ImageCarousel.tsx'
 import StarRating from '@/components/templates/StarRating.tsx'
 import { HeartIcon } from '@phosphor-icons/react'
 import { dummyText } from '@/components/common/dummyText.ts'
+import StarRatingCount from '@/components/templates/StarRatingCount.tsx'
 
 export default function CardDetail() {
   return (
@@ -9,9 +10,15 @@ export default function CardDetail() {
       <ImageCarousel />
 
       <div className="flex flex-col flex-1 gap-6">
-        <StarRating />
         <div className="flex flex-col gap-2">
           <h2 className="text-xl font-bold">템플릿 제목</h2>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span>4.5</span>
+              <StarRating />
+              <StarRatingCount count={1000} />
+            </div>
+          </div>
           <p className="text-base-content/40 text-sm">2024년 1월 1일</p>
         </div>
         <p className="text-base-content/80 leading-[1.75]">{dummyText}</p>
