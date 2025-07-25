@@ -28,3 +28,16 @@ html[data-theme="bumblebee"] .navbar {
 .card-body {
     @apply py-4
 }
+
+.card::after {
+    content: '';
+    @apply absolute inset-0 bg-black/0 transition duration-200
+}
+
+.card:hover {
+    @apply shadow-xl
+}
+
+.card:hover::after {
+    @apply bg-[#444444]/10 cursor-pointer
+}

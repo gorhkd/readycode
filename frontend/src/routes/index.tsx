@@ -15,7 +15,7 @@ function Home() {
     <div className="text-center">
       <main className="min-h-screen flex flex-col items-center justify-center m-auto max-w-[1600px]">
         <div className="flex justify-between w-full">
-          <div className="flex justify-center items-center gap-4">
+          <div className="flex justify-center items-center gap-1">
             <FadersHorizontalIcon size={20} />
             {leftFilters.map((word, i) => (
               <button key={i} className="btn btn-ghost">
@@ -23,7 +23,7 @@ function Home() {
               </button>
             ))}
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-1">
             {rightFilters.map((word, i) => (
               <button className="btn btn-ghost" key={i}>
                 {word}
