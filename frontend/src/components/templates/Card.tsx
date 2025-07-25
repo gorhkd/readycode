@@ -4,7 +4,7 @@ import ImagePlaceholder from '@/components/common/ImagePlaceholder.tsx'
 export default function Card() {
   return (
     <div className="card bg-base-100 w-full overflow-hidden">
-      <figure className="bg-base-200 aspect-[4/3] overflow-hidden">
+      <figure className="bg-base-200 aspect-[4/3] rounded-box overflow-hidden">
         <ImagePlaceholder />
       </figure>
       <div className="card-body">
