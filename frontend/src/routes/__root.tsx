@@ -11,7 +11,7 @@ function RootComponent() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="flex-grow pt-18 p-1 m-auto max-w-[1600px]">
+      <main className="flex-grow lg:px-4 px-1 pt-18 m-auto max-w-[1600px]">
         <Outlet />
       </main>
 
