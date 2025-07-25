@@ -1,5 +1,5 @@
-import { StarHalfIcon, StarIcon } from '@phosphor-icons/react'
 import logo from '@/logo.svg'
+import StarRating from '@/components/templates/StarRating.tsx'
 
 export default function Card() {
   return (
@@ -18,16 +18,7 @@ export default function Card() {
         </h2>
         <p className="text-left text-primary-content/70">Lorem ipsum dolor</p>
         <div className="card-actions">
-          <div className="flex items-center gap-1">
-            <div className="flex gap-0">
-              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
-              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
-              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
-              <StarIcon size={14} weight="fill" className="fill-yellow-400" />
-              <StarHalfIcon size={14} weight="fill" className="fill-yellow-400" />
-            </div>
-            <span className="text-primary-content/70">(1,000)</span>
-          </div>
+          <StarRating />
           <div className="badge badge-sm badge-ghost text-primary-content/70">2024년 1월 1일</div>
         </div>
       </div>
