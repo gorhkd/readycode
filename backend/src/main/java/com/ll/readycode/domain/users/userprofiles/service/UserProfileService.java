@@ -90,7 +90,12 @@ public class UserProfileService {
       throw new CustomException(INVALID_TOKEN);
     }
 
-    UserProfile userProfile = userPrincipal.getUserProfile();
+    Long userProfileId = userPrincipal.getUserProfile().getId();
+    UserProfile userProfile =
+        userProfileRepository
+            .findById(userProfileId)
+            .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
     ProfileWithSocial profileWithSocial =
         ProfileWithSocial.builder()
             .nickname(userProfile.getNickname())

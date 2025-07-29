@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -25,11 +26,15 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session
+    http.csrf(AbstractHttpConfigurer::disable)
+        .headers(header -> header
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+        .sessionManagement(
+            session -> session
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
+        .authorizeHttpRequests(
+            auth ->
+                auth
                     /* 인증 없어도 되는 API */
                     // 인증 API
                     .requestMatchers(
@@ -37,23 +42,27 @@ public class SecurityConfig {
                     ).permitAll()
                     // Swagger
                     .requestMatchers(
-                            "v3/api-docs/**",
+                            "/v3/api-docs/**",
                             "/swagger-resources/**",
                             "/swagger-ui*/**",
                             "/webjars/**",
                             "/swagger/**"
                     ).permitAll()
+                    // H2
+                    .requestMatchers(
+                            "/h2-console/**"
+                    ).permitAll()
 
                     .anyRequest().authenticated()
-            )
-            .exceptionHandling(exception -> exception
+        )
+        .exceptionHandling(exception -> exception
                     /* 예외 처리 Handler */
                     // 인증 실패 했을 경우
                     .authenticationEntryPoint(customAuthenticationEntryPoint)
                     // 접근 권한이 없는 경우
                     .accessDeniedHandler(customAccessDeniedHandler)
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }

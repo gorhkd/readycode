@@ -31,10 +31,10 @@ public class JwtProvider {
 
   public String createTempAccessToken(String provider, String providerId, String email) {
     return createTempToken(
-            provider,
-            providerId,
-            email,
-            Duration.ofMinutes(jwtProperties.getAccessToken().getValidMinute()));
+        provider,
+        providerId,
+        email,
+        Duration.ofMinutes(jwtProperties.getAccessToken().getValidMinute()));
   }
 
   public String createRefreshToken() {
@@ -66,32 +66,40 @@ public class JwtProvider {
     throw new CustomException(ErrorCode.INVALID_TOKEN);
   }
 
+  public boolean isAllowMasterToken() {
+    return jwtProperties.isAllowMasterToken();
+  }
+
+  public String getMasterToken() {
+    return jwtProperties.getMasterToken();
+  }
+
   private String createToken(Long userId, Duration validity) {
     Date now = new Date();
     Date expiry = new Date(now.getTime() + validity.toMillis());
 
     return Jwts.builder()
-            .setSubject("AUTH")
-            .setIssuedAt(now)
-            .setExpiration(expiry)
-            .claim("userId", userId)
-            .signWith(jwtSigningKey, SignatureAlgorithm.HS256)
-            .compact();
+        .setSubject("AUTH")
+        .setIssuedAt(now)
+        .setExpiration(expiry)
+        .claim("userId", userId)
+        .signWith(jwtSigningKey, SignatureAlgorithm.HS256)
+        .compact();
   }
 
   private String createTempToken(
-          String provider, String providerId, String email, Duration validity) {
+      String provider, String providerId, String email, Duration validity) {
     Date now = new Date();
     Date expiry = new Date(now.getTime() + validity.toMillis());
 
     return Jwts.builder()
-            .setSubject("TEMP")
-            .setIssuedAt(now)
-            .setExpiration(expiry)
-            .claim("provider", provider)
-            .claim("providerId", providerId)
-            .claim("email", email)
-            .signWith(jwtSigningKey, SignatureAlgorithm.HS256)
-            .compact();
+        .setSubject("TEMP")
+        .setIssuedAt(now)
+        .setExpiration(expiry)
+        .claim("provider", provider)
+        .claim("providerId", providerId)
+        .claim("email", email)
+        .signWith(jwtSigningKey, SignatureAlgorithm.HS256)
+        .compact();
   }
 }

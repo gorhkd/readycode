@@ -15,6 +15,8 @@ public class JwtProperties {
   private TempAccessToken tempAccessToken;
   private AccessToken accessToken;
   private RefreshToken refreshToken;
+  private boolean allowMasterToken;
+  private String masterToken;
 
   @Getter
   @Setter
