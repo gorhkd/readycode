@@ -16,10 +16,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserProfile extends BaseEntity {
 
+  @Column(nullable = false)
   private String phoneNumber;
 
+  @Column(nullable = false)
   private String nickname;
 
+  @Enumerated(EnumType.STRING)
   private UserPurpose purpose;
 
   private boolean isDeleted;
@@ -37,6 +40,7 @@ public class UserProfile extends BaseEntity {
     this.phoneNumber = phoneNumber;
     this.nickname = nickname;
     this.purpose = purpose;
+    this.isDeleted = false;
     this.role = role;
     this.userAuths = new ArrayList<>();
   }
