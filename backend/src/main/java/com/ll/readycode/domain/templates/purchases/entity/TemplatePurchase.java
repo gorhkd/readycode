@@ -15,6 +15,9 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
+@Table(
+    name = "template_purchases",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"buyer_id", "template_id"})})
 public class TemplatePurchase extends BaseCreatedOnlyEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)

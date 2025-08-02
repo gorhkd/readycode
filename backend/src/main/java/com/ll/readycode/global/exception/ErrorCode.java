@@ -42,6 +42,7 @@ public enum ErrorCode {
   ALREADY_PURCHASED(HttpStatus.CONFLICT, "TP001", "이미 구매한 템플릿입니다."),
   PURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "TP002", "구매 내역을 찾을 수 없습니다."),
   INSUFFICIENT_POINTS(HttpStatus.BAD_REQUEST, "TP003", "포인트가 부족합니다."),
+  NOT_FREE_TEMPLATE(HttpStatus.BAD_REQUEST, "TP004", "유료 템플릿은 해당 API로 구매할 수 없습니다."),
 
   // 템플릿 다운로드 (TemplateDownload)
   DOWNLOAD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "TD001", "다운로드 횟수를 초과했습니다."),
