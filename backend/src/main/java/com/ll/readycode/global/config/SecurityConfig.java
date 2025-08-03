@@ -1,11 +1,14 @@
 package com.ll.readycode.global.config;
 
+import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
 import com.ll.readycode.global.common.auth.handler.CustomAccessDeniedHandler;
 import com.ll.readycode.global.common.auth.handler.CustomAuthenticationEntryPoint;
 import com.ll.readycode.global.common.auth.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -26,7 +30,9 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    http.csrf(AbstractHttpConfigurer::disable)
+    http
+        .cors(Customizer.withDefaults())
+        .csrf(AbstractHttpConfigurer::disable)
         .headers(header -> header
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
         .sessionManagement(
@@ -53,6 +59,13 @@ public class SecurityConfig {
                             "/h2-console/**"
                     ).permitAll()
 
+                    /* 인증 필요한 API */
+                    // 관리자 권한 API
+                    .requestMatchers(
+                            "/api/admin/**"
+                    ).hasRole(UserRole.ADMIN.name())
+
+                    // 그 외 API
                     .anyRequest().authenticated()
         )
         .exceptionHandling(exception -> exception
