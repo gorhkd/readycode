@@ -50,10 +50,12 @@ public class TemplatePurchaseService {
   }
 
   @Transactional(readOnly = true)
+  // TODO: 삭제된 템플릿에 대한 정책 정의 필요 (구매 내역에 표시 vs 숨김)
   public List<PurchasedTemplateResponse> getPurchasedTemplates(Long userId) {
     List<TemplatePurchase> purchases = templatePurchaseRepository.findByBuyerIdWithTemplate(userId);
 
     return purchases.stream()
+        .filter(purchase -> purchase.getTemplate() != null)
         .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
         .map(purchase -> PurchasedTemplateResponse.of(purchase.getTemplate()))
         .toList();
