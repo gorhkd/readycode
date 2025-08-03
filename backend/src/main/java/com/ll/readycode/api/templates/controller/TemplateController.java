@@ -58,8 +58,9 @@ public class TemplateController {
   @Operation(summary = "템플릿 생성", description = "템플릿을 생성합니다.")
   @PostMapping
   public ResponseEntity<SuccessResponse<TemplateResponse>> createTemplate(
-      @Valid @RequestBody TemplateCreateRequest request) {
-    Template template = templateService.create(request);
+      @Valid @RequestBody TemplateCreateRequest request,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    Template template = templateService.create(request, userPrincipal.getUserProfile());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.of("게시물이 성공적으로 생성되었습니다.", TemplateResponse.of(template)));
   }
