@@ -5,6 +5,7 @@ import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseServi
 import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,18 +13,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@RequiredArgsConstructor
+@Tag(name = "템플릿 구매 API", description = "템플릿 무료 구매 및 구매 내역 조회 관련 API")
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/purchases")
 public class TemplatePurchaseController {
-
   private final TemplatePurchaseService templatePurchaseService;
 
   @PostMapping("/{templateId}")
   @Operation(summary = "템플릿 구매 (무료 담기)", description = "무료 템플릿을 구매 내역에 추가합니다.")
   public ResponseEntity<SuccessResponse<Void>> purchaseTemplate(
       @PathVariable Long templateId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-
     templatePurchaseService.purchaseFreeTemplate(userPrincipal.getUserProfile(), templateId);
 
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -34,7 +34,6 @@ public class TemplatePurchaseController {
   @Operation(summary = "마이페이지 구매 내역 조회", description = "사용자가 구매한 템플릿 목록을 조회합니다.")
   public ResponseEntity<SuccessResponse<List<PurchasedTemplateResponse>>> getMyPurchases(
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
-
     List<PurchasedTemplateResponse> responses =
         templatePurchaseService.getPurchasedTemplates(userPrincipal.getUserProfile().getId());
 

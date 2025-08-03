@@ -11,6 +11,7 @@ import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/templates")
+@Tag(name = "템플릿 API", description = "템플릿 조회, 생성, 수정, 삭제 등의 기능을 제공합니다.")
+@RequestMapping("/api/templates")
 @RequiredArgsConstructor
 @RestController
 public class TemplateController {
