@@ -58,4 +58,9 @@ public class TemplatePurchaseService {
         .map(purchase -> PurchasedTemplateResponse.of(purchase.getTemplate()))
         .toList();
   }
+
+  @Transactional(readOnly = true)
+  public boolean existsByBuyerIdAndTemplateId(Long buyerId, Long templateId) {
+    return templatePurchaseRepository.existsByBuyerIdAndTemplateId(buyerId, templateId);
+  }
 }
