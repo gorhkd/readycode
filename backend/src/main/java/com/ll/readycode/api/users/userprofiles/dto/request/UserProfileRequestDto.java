@@ -1,16 +1,19 @@
 package com.ll.readycode.api.users.userprofiles.dto.request;
 
 import com.ll.readycode.domain.users.userprofiles.entity.UserPurpose;
+import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
 @Schema(description = "유저 프로필 요청 DTO")
 public class UserProfileRequestDto {
 
   @Schema(description = "회원가입 요청 DTO")
+  @Builder
   public record Signup(
       @Schema(description = "닉네임 (2~20자, 특수문자 제외)", example = "readyUser")
           @NotBlank
@@ -23,9 +26,13 @@ public class UserProfileRequestDto {
           String phoneNumber,
       @Schema(description = "가입 목적 (예: LEARNING, LECTURE)", example = "LEARNING")
           @NotNull(message = "가입 목적은 필수 항목입니다.")
-          UserPurpose purpose) {}
+          UserPurpose purpose,
+      @Schema(description = "사용자 권한 (예: USER, ADMIN", example = "USER")
+          @NotNull(message = "사용자 권한은 필수 항목입니다.")
+          UserRole userRole) {}
 
   @Schema(description = "회원 정보 수정 요청 DTO")
+  @Builder
   public record UpdateProfile(
       @Schema(description = "닉네임 (2~20자, 특수문자 제외)", example = "readyUser")
           @NotBlank
