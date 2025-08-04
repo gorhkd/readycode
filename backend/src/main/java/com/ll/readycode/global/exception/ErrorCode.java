@@ -45,6 +45,13 @@ public enum ErrorCode {
   INSUFFICIENT_POINTS(HttpStatus.BAD_REQUEST, "TP003", "포인트가 부족합니다."),
   NOT_FREE_TEMPLATE(HttpStatus.BAD_REQUEST, "TP004", "유료 템플릿은 해당 API로 구매할 수 없습니다."),
 
+  // 파일 업로드 (File)
+  EMPTY_FILE(HttpStatus.BAD_REQUEST, "F001", "업로드할 파일이 비어 있습니다."),
+  UNSUPPORTED_EXTENSION(HttpStatus.BAD_REQUEST, "F002", "지원하지 않는 파일 확장자입니다."),
+  FILE_SAVE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "F003", "파일 저장 중 오류가 발생했습니다."),
+  FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "F004", "파일 크기가 허용치를 초과했습니다."),
+  INVALID_FILENAME(HttpStatus.BAD_REQUEST, "F005", "파일 이름을 확인할 수 없습니다."),
+
   // 템플릿 다운로드 (TemplateDownload)
   DOWNLOAD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "TD001", "다운로드 횟수를 초과했습니다."),
   DOWNLOAD_NOT_FOUND(HttpStatus.NOT_FOUND, "TD002", "다운로드 내역이 존재하지 않습니다."),
