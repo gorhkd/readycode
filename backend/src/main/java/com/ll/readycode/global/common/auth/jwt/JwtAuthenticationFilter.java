@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         && token != null
         && token.equals(jwtProvider.getMasterToken())) {
 
-      UserDetails masterUserDetails = customUserDetailsService.loadUserByUsername("9999");
+      UserDetails masterUserDetails = customUserDetailsService.loadUserByUsername("1");
       String masterRole = ((UserPrincipal) masterUserDetails).getUserProfile().getRole().name();
 
       Authentication masterAuth =
