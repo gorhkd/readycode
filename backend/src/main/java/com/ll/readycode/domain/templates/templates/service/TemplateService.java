@@ -6,6 +6,7 @@ import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateSummary;
 import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.service.CategoryService;
+import com.ll.readycode.domain.templates.files.service.TemplateFileService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
@@ -17,17 +18,20 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
 public class TemplateService {
   private final TemplateRepository templateRepository;
+  private final TemplateFileService templateFileService;
   private final CategoryService categoryService;
 
   @Transactional
-  public Template create(TemplateCreateRequest request, UserProfile userProfile) {
+  public Template create(
+      TemplateCreateRequest request, MultipartFile file, UserProfile userProfile) {
     Category category = categoryService.findCategoryById(request.categoryId());
-    // TODO: 추후 인증 구현 후 SecurityContext에서 seller(UserProfile) 가져오기
+    templateFileService.create(file);
 
     Template template =
         Template.builder()

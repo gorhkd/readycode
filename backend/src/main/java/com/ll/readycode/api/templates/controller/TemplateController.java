@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "템플릿 API", description = "템플릿 조회, 생성, 수정, 삭제 등의 기능을 제공합니다.")
 @RequestMapping("/api/templates")
@@ -60,9 +61,10 @@ public class TemplateController {
   @Operation(summary = "템플릿 생성", description = "템플릿을 생성합니다.")
   @PostMapping
   public ResponseEntity<SuccessResponse<TemplateResponse>> createTemplate(
-      @Valid @RequestBody TemplateCreateRequest request,
+      @RequestPart("template") @Valid TemplateCreateRequest request,
+      @RequestPart("file") MultipartFile file,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
-    Template template = templateService.create(request, userPrincipal.getUserProfile());
+    Template template = templateService.create(request, file, userPrincipal.getUserProfile());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.of("게시물이 성공적으로 생성되었습니다.", TemplateResponse.of(template)));
   }
