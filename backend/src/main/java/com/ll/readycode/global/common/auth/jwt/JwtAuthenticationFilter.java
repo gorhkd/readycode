@@ -39,7 +39,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String token = getTokenFromHeader(request);
 
+    // 마스터 토큰 허용 시, 마스터 토큰 체크
+    if (jwtProvider.isAllowMasterToken()
+        && token != null
+        && token.equals(jwtProvider.getMasterToken())) {
+
+      UserDetails masterUserDetails = customUserDetailsService.loadUserByUsername("1");
+      String masterRole = ((UserPrincipal) masterUserDetails).getUserProfile().getRole().name();
+
+      Authentication masterAuth =
+          new UsernamePasswordAuthenticationToken(
+              masterUserDetails, null, List.of(new SimpleGrantedAuthority("ROLE_" + masterRole)));
+
+      SecurityContextHolder.getContext().setAuthentication(masterAuth);
+    }
+
+    // 일반 토큰일 경우
     if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
       try {
         jwtProvider.validateToken(token);
 

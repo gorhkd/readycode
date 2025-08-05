@@ -9,7 +9,6 @@ import com.ll.readycode.api.users.userprofiles.dto.response.UserProfileResponseD
 import com.ll.readycode.api.users.userprofiles.dto.response.UserProfileResponseDto.ProfileWithSocial.Social;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
-import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
 import com.ll.readycode.domain.users.userprofiles.repository.UserProfileRepository;
 import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.user.TempUserPrincipal;
@@ -25,6 +24,11 @@ public class UserProfileService {
 
   private final UserProfileRepository userProfileRepository;
   private final JwtProvider jwtProvider;
+
+  @Transactional(readOnly = true)
+  public long countUserProfile() {
+    return userProfileRepository.count();
+  }
 
   @Transactional
   public Token signup(TempUserPrincipal tempUserPrincipal, Signup signupRequest) {
@@ -46,7 +50,7 @@ public class UserProfileService {
             .phoneNumber(signupRequest.phoneNumber())
             .nickname(signupRequest.nickname())
             .purpose(signupRequest.purpose())
-            .role(UserRole.USER)
+            .role(signupRequest.userRole())
             .build();
 
     userProfile.addUserAuth(userAuth);
@@ -90,7 +94,12 @@ public class UserProfileService {
       throw new CustomException(INVALID_TOKEN);
     }
 
-    UserProfile userProfile = userPrincipal.getUserProfile();
+    Long userProfileId = userPrincipal.getUserProfile().getId();
+    UserProfile userProfile =
+        userProfileRepository
+            .findById(userProfileId)
+            .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+
     ProfileWithSocial profileWithSocial =
         ProfileWithSocial.builder()
             .nickname(userProfile.getNickname())

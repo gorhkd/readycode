@@ -4,6 +4,7 @@ import static com.ll.readycode.global.exception.ErrorCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -180,6 +181,8 @@ public class UserProfileServiceTest {
     userProfile.addUserAuth(userAuth);
 
     UserPrincipal userPrincipal = new UserPrincipal(userProfile);
+
+    given(userProfileRepository.findById(any())).willReturn(Optional.of(userProfile));
 
     // when
     ProfileWithSocial profileWithSocialInfo =

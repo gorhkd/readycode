@@ -10,16 +10,21 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserProfile extends BaseEntity {
 
+  @Column(nullable = false)
   private String phoneNumber;
 
+  @Column(nullable = false)
   private String nickname;
 
+  @Enumerated(EnumType.STRING)
   private UserPurpose purpose;
 
   private boolean isDeleted;
@@ -30,16 +35,8 @@ public class UserProfile extends BaseEntity {
   private UserRole role;
 
   @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL)
-  private List<UserAuth> userAuths;
-
-  @Builder
-  public UserProfile(String phoneNumber, String nickname, UserPurpose purpose, UserRole role) {
-    this.phoneNumber = phoneNumber;
-    this.nickname = nickname;
-    this.purpose = purpose;
-    this.role = role;
-    this.userAuths = new ArrayList<>();
-  }
+  @Builder.Default
+  private List<UserAuth> userAuths = new ArrayList<>();
 
   public void updateNickname(String nickname) {
     this.nickname = nickname;
