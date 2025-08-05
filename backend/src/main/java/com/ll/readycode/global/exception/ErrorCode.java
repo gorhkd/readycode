@@ -53,8 +53,11 @@ public enum ErrorCode {
   INVALID_FILENAME(HttpStatus.BAD_REQUEST, "F005", "파일 이름을 확인할 수 없습니다."),
 
   // 템플릿 다운로드 (TemplateDownload)
+  // 템플릿 다운로드 (TemplateDownload)
   DOWNLOAD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "TD001", "다운로드 횟수를 초과했습니다."),
   DOWNLOAD_NOT_FOUND(HttpStatus.NOT_FOUND, "TD002", "다운로드 내역이 존재하지 않습니다."),
+  FILE_READ_ERROR(HttpStatus.NOT_FOUND, "TD003", "해당 파일을 불러올 수 없습니다."),
+  INVALID_FILE_PATH(HttpStatus.BAD_REQUEST, "TD004", "잘못된 파일 경로입니다."),
 
   // 리뷰 (Review)
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "리뷰를 찾을 수 없습니다."),

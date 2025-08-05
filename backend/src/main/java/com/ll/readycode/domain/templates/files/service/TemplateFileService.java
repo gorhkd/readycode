@@ -2,6 +2,7 @@ package com.ll.readycode.domain.templates.files.service;
 
 import com.ll.readycode.domain.templates.files.entity.TemplateFile;
 import com.ll.readycode.domain.templates.files.repository.TemplateFileRepository;
+import com.ll.readycode.global.common.auth.oauth.properties.TemplateFileProperties;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.io.File;
@@ -17,9 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class TemplateFileService {
 
   private final TemplateFileRepository templateFileRepository;
-
-  private static final String BASE_DIR = "uploads/templates/";
-  private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  private final TemplateFileProperties properties;
 
   public TemplateFile create(MultipartFile file) {
     validateFile(file);
@@ -42,7 +41,7 @@ public class TemplateFileService {
       throw new CustomException(ErrorCode.UNSUPPORTED_EXTENSION);
     }
 
-    if (file.getSize() > MAX_FILE_SIZE) {
+    if (file.getSize() > properties.getMaxSize().toBytes()) {
       throw new CustomException(ErrorCode.FILE_TOO_LARGE);
     }
   }
@@ -51,9 +50,9 @@ public class TemplateFileService {
     String extension = getFileExtension(file.getOriginalFilename());
     String uuid = UUID.randomUUID().toString();
     String savedFileName = uuid + "." + extension;
-    String fullPath = BASE_DIR + savedFileName;
+    String fullPath = properties.getBaseDir() + savedFileName;
 
-    File directory = new File(BASE_DIR);
+    File directory = new File(properties.getBaseDir());
     if (!directory.exists()) {
       directory.mkdirs();
     }
@@ -72,7 +71,7 @@ public class TemplateFileService {
 
     TemplateFile templateFile =
         TemplateFile.builder()
-            .originalName(file.getOriginalFilename())
+            .originalFilename(file.getOriginalFilename())
             .extension(extension)
             .fileSize(file.getSize())
             .url(savedPath)
@@ -90,5 +89,11 @@ public class TemplateFileService {
 
   private boolean isAllowedExtension(String extension) {
     return List.of("zip", "rar", "txt", "java", "pdf").contains(extension);
+  }
+
+  public TemplateFile findByTemplateId(Long templateId) {
+    return templateFileRepository
+        .findByTemplateId(templateId)
+        .orElseThrow(() -> new CustomException(ErrorCode.DOWNLOAD_NOT_FOUND));
   }
 }

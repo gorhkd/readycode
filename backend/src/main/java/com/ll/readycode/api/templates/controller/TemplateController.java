@@ -5,6 +5,7 @@ import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateDetailResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
+import com.ll.readycode.domain.templates.downloads.service.TemplateDownloadService;
 import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
@@ -12,9 +13,11 @@ import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class TemplateController {
   private final TemplateService templateService;
   private final TemplatePurchaseService templatePurchaseService;
+  private final TemplateDownloadService templateDownloadService;
 
   @Operation(summary = "템플릿 목록 조회", description = "템플릿을 최신순 기준으로 커서 기반 페이징 방식으로 조회합니다.")
   @GetMapping
@@ -83,5 +87,18 @@ public class TemplateController {
   public ResponseEntity<SuccessResponse> deleteTemplate(@PathVariable Long templatesId) {
     templateService.delete(templatesId);
     return ResponseEntity.ok(SuccessResponse.of("게시물이 성공적으로 삭제되었습니다.", null));
+  }
+
+  @GetMapping("/{templateId}/download")
+  public ResponseEntity<Resource> downloadTemplate(
+      @PathVariable Long templateId,
+      @AuthenticationPrincipal UserPrincipal userPrincipal,
+      HttpServletRequest request) {
+
+    String ip = request.getRemoteAddr();
+    String userAgent = request.getHeader("User-Agent");
+
+    return templateDownloadService.downloadTemplate(
+        templateId, userPrincipal.getUserProfile(), ip, userAgent);
   }
 }
