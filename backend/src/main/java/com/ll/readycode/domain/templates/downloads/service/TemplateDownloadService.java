@@ -91,6 +91,7 @@ public class TemplateDownloadService {
     } catch (IOException e) {
       throw new CustomException(ErrorCode.FILE_READ_ERROR);
     } catch (Exception e) {
+      log.error("downloadTemplate 실패", e);
       throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }
@@ -138,7 +139,6 @@ public class TemplateDownloadService {
           "Template download started. TemplateId: {}, UserId: {}",
           template.getId(),
           userProfile.getId());
-      logTemplateDownload(userProfile, template, ipAddress, deviceInfo);
 
     } catch (Exception e) {
       // 로그 저장 실패가 다운로드 자체를 방해하지 않도록 함

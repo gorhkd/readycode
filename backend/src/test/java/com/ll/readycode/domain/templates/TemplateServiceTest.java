@@ -28,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class TemplateServiceTest {
@@ -45,6 +46,7 @@ class TemplateServiceTest {
 
   UserProfile userProfile =
       UserProfile.builder()
+          .id(1L)
           .nickname("abc")
           .phoneNumber("010")
           .role(UserRole.USER)
@@ -92,6 +94,8 @@ class TemplateServiceTest {
   void updateTemplate_success() {
     // given
     Template existing = createTemplate(1L, "템플릿1", category1, LocalDateTime.now());
+    TemplateFile mockFile = mock(TemplateFile.class);
+    existing.setTemplateFile(mockFile);
 
     TemplateUpdateRequest request =
         new TemplateUpdateRequest("New Title", "New Desc", 200, 1L, "new.png");
@@ -101,7 +105,8 @@ class TemplateServiceTest {
 
     given(templateRepository.findById(1L)).willReturn(Optional.of(existing));
     given(categoryService.findCategoryById(1L)).willReturn(category1);
-    given(templateFileService.create(any())).willReturn(mock(TemplateFile.class));
+    given(templateFileService.updateFile(any(TemplateFile.class), any(MultipartFile.class)))
+        .willReturn(mockFile);
 
     // when
     Template result = templateService.update(1L, request, userProfile, file);
@@ -115,9 +120,11 @@ class TemplateServiceTest {
   @DisplayName("템플릿 삭제 성공")
   void deleteTemplate_success() {
     // given
-    Template template = mock(Template.class);
-    given(templateRepository.findById(1L)).willReturn(Optional.of(template));
+    Template template = createTemplate(1L, "템플릿1", category1, LocalDateTime.now());
+    TemplateFile mockFile = mock(TemplateFile.class);
+    template.setTemplateFile(mockFile);
 
+    given(templateRepository.findById(1L)).willReturn(Optional.of(template));
     doNothing().when(templateFileService).deleteFile(any());
 
     // when
@@ -125,7 +132,7 @@ class TemplateServiceTest {
 
     // then
     verify(templateRepository).delete(template);
-    verify(templateFileService).deleteFile(any());
+    verify(templateFileService).deleteFile(mockFile);
   }
 
   @Test
