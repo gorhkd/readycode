@@ -77,6 +77,7 @@ public class TemplateService {
     Template template = findTemplateById(templatesId);
 
     validateTemplateOwner(template, userProfile.getId());
+    templateFileService.deleteFile(template.getTemplateFile());
     templateRepository.delete(template);
   }
 

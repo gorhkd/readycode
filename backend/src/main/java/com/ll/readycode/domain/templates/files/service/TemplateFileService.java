@@ -98,6 +98,17 @@ public class TemplateFileService {
     return create(newFile);
   }
 
+  public void deleteFile(TemplateFile templateFile) {
+    File physicalFile = new File(templateFile.getUrl());
+
+    if (physicalFile.exists()) {
+      boolean deleted = physicalFile.delete();
+      if (!deleted) {
+        throw new CustomException(ErrorCode.FILE_DELETE_FAILED);
+      }
+    }
+  }
+
   public TemplateFile findByTemplateId(Long templateId) {
     return templateFileRepository
         .findByTemplateId(templateId)
