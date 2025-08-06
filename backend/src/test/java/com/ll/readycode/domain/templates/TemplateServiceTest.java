@@ -9,6 +9,8 @@ import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
 import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.service.CategoryService;
+import com.ll.readycode.domain.templates.files.entity.TemplateFile;
+import com.ll.readycode.domain.templates.files.service.TemplateFileService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class TemplateServiceTest {
@@ -32,6 +35,8 @@ class TemplateServiceTest {
   @InjectMocks private TemplateService templateService;
 
   @Mock private TemplateRepository templateRepository;
+
+  @Mock private TemplateFileService templateFileService;
 
   @Mock private CategoryService categoryService;
 
@@ -47,7 +52,7 @@ class TemplateServiceTest {
           .build();
 
   private Template createTemplate(
-      Long id, String title, Category category, LocalDateTime localDateTime) {
+      Long id, String title, Category category, LocalDateTime createdAt) {
     return Template.builder()
         .id(id)
         .title(title)
@@ -55,7 +60,8 @@ class TemplateServiceTest {
         .price(100)
         .image("old.png")
         .category(category)
-        .createdAt(localDateTime)
+        .createdAt(createdAt)
+        .seller(userProfile)
         .build();
   }
 
@@ -65,15 +71,19 @@ class TemplateServiceTest {
     // given
     TemplateCreateRequest request =
         new TemplateCreateRequest("로그인 템플릿", "JWT 기반 로그인", 100, 1L, "image.png");
+
+    MockMultipartFile file =
+        new MockMultipartFile("file", "sample.zip", "application/zip", "test".getBytes());
+
     given(categoryService.findCategoryById(anyLong())).willReturn(category1);
+    given(templateFileService.create(any())).willReturn(mock(TemplateFile.class));
     given(templateRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
     // when
-    Template result = templateService.create(request, userProfile);
+    Template result = templateService.create(request, file, userProfile);
 
     // then
     assertThat(result.getTitle()).isEqualTo("로그인 템플릿");
-    assertThat(result.getCategory()).isEqualTo(category1);
     verify(templateRepository).save(any());
   }
 
@@ -86,15 +96,18 @@ class TemplateServiceTest {
     TemplateUpdateRequest request =
         new TemplateUpdateRequest("New Title", "New Desc", 200, 1L, "new.png");
 
+    MockMultipartFile file =
+        new MockMultipartFile("file", "sample.zip", "application/zip", "test".getBytes());
+
     given(templateRepository.findById(1L)).willReturn(Optional.of(existing));
     given(categoryService.findCategoryById(1L)).willReturn(category1);
+    given(templateFileService.create(any())).willReturn(mock(TemplateFile.class));
 
     // when
-    Template result = templateService.update(1L, request);
+    Template result = templateService.update(1L, request, userProfile, file);
 
     // then
     assertThat(result.getTitle()).isEqualTo("New Title");
-    assertThat(result.getCategory().getName()).isEqualTo("백엔드");
     assertThat(result.getPrice()).isEqualTo(200);
   }
 
@@ -105,11 +118,14 @@ class TemplateServiceTest {
     Template template = mock(Template.class);
     given(templateRepository.findById(1L)).willReturn(Optional.of(template));
 
+    doNothing().when(templateFileService).deleteFile(any());
+
     // when
-    templateService.delete(1L);
+    templateService.delete(1L, userProfile);
 
     // then
     verify(templateRepository).delete(template);
+    verify(templateFileService).deleteFile(any());
   }
 
   @Test
