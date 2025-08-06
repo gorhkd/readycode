@@ -15,8 +15,9 @@ public record TemplateDetailResponse(
     @Schema(description = "가격 (포인트)", example = "300") int price,
     @Schema(description = "카테고리 이름", example = "백엔드") String category,
     @Schema(description = "생성일시", example = "2024-12-10T12:00:00") LocalDateTime createdAt,
-    @Schema(description = "수정일시", example = "2024-12-11T13:00:00") LocalDateTime updatedAt) {
-  public static TemplateDetailResponse of(Template template) {
+    @Schema(description = "수정일시", example = "2024-12-11T13:00:00") LocalDateTime updatedAt,
+    @Schema(description = "사용자 구매 여부", example = "true") boolean purchased) {
+  public static TemplateDetailResponse of(Template template, boolean purchased) {
     return TemplateDetailResponse.builder()
         .templateId(template.getId())
         .title(template.getTitle())
@@ -26,6 +27,7 @@ public record TemplateDetailResponse(
         .category(template.getCategory().getName())
         .createdAt(template.getCreatedAt())
         .updatedAt(template.getUpdatedAt())
+        .purchased(purchased)
         .build();
   }
 }

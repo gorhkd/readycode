@@ -12,6 +12,9 @@ import com.ll.readycode.domain.categories.service.CategoryService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
+import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.domain.users.userprofiles.entity.UserPurpose;
+import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.time.LocalDateTime;
@@ -34,6 +37,14 @@ class TemplateServiceTest {
 
   Category category1 = Category.builder().id(1L).name("백엔드").build();
   Category category2 = Category.builder().id(2L).name("프론트").build();
+
+  UserProfile userProfile =
+      UserProfile.builder()
+          .nickname("abc")
+          .phoneNumber("010")
+          .role(UserRole.USER)
+          .purpose(UserPurpose.LEARNING)
+          .build();
 
   private Template createTemplate(
       Long id, String title, Category category, LocalDateTime localDateTime) {
@@ -58,7 +69,7 @@ class TemplateServiceTest {
     given(templateRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
     // when
-    Template result = templateService.create(request);
+    Template result = templateService.create(request, userProfile);
 
     // then
     assertThat(result.getTitle()).isEqualTo("로그인 템플릿");
