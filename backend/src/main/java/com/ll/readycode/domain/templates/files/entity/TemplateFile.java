@@ -28,4 +28,8 @@ public class TemplateFile extends BaseCreatedOnlyEntity {
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "template_id", nullable = false)
   private Template template;
+
+  public void setTemplate(Template template) {
+    this.template = template;
+  }
 }

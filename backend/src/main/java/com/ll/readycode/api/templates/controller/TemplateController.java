@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -63,7 +64,7 @@ public class TemplateController {
   }
 
   @Operation(summary = "템플릿 생성", description = "템플릿을 생성합니다.")
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<SuccessResponse<TemplateResponse>> createTemplate(
       @RequestPart("template") @Valid TemplateCreateRequest request,
       @RequestPart("file") MultipartFile file,
@@ -74,18 +75,23 @@ public class TemplateController {
   }
 
   @Operation(summary = "템플릿 수정", description = "템플릿 ID를 기준으로 수정합니다.")
-  @PatchMapping("/{templatesId}")
+  @PatchMapping(value = "/{templateId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<SuccessResponse<TemplateResponse>> modifyTemplate(
-      @Valid @RequestBody TemplateUpdateRequest request, @PathVariable Long templatesId) {
-    Template template = templateService.update(templatesId, request);
+      @RequestPart("request") @Valid TemplateUpdateRequest request,
+      @RequestPart(value = "file", required = false) MultipartFile file,
+      @PathVariable Long templateId,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    Template template =
+        templateService.update(templateId, request, userPrincipal.getUserProfile(), file);
     return ResponseEntity.ok(
         SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
   }
 
   @Operation(summary = "템플릿 삭제", description = "템플릿 ID를 기준으로 삭제합니다.")
   @DeleteMapping("/{templatesId}")
-  public ResponseEntity<SuccessResponse> deleteTemplate(@PathVariable Long templatesId) {
-    templateService.delete(templatesId);
+  public ResponseEntity<SuccessResponse> deleteTemplate(
+      @PathVariable Long templatesId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    templateService.delete(templatesId, userPrincipal.getUserProfile());
     return ResponseEntity.ok(SuccessResponse.of("게시물이 성공적으로 삭제되었습니다.", null));
   }
 

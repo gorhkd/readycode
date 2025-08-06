@@ -6,6 +6,7 @@ import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateSummary;
 import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.service.CategoryService;
+import com.ll.readycode.domain.templates.files.entity.TemplateFile;
 import com.ll.readycode.domain.templates.files.service.TemplateFileService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
@@ -31,7 +32,7 @@ public class TemplateService {
   public Template create(
       TemplateCreateRequest request, MultipartFile file, UserProfile userProfile) {
     Category category = categoryService.findCategoryById(request.categoryId());
-    templateFileService.create(file);
+    TemplateFile templateFile = templateFileService.create(file);
 
     Template template =
         Template.builder()
@@ -43,26 +44,39 @@ public class TemplateService {
             .seller(userProfile)
             .build();
 
+    template.setTemplateFile(templateFile);
+
     templateRepository.save(template);
     return template;
   }
 
   @Transactional
-  public Template update(Long templatesId, @Valid TemplateUpdateRequest request) {
+  public Template update(
+      Long templatesId,
+      @Valid TemplateUpdateRequest request,
+      UserProfile userProfile,
+      MultipartFile file) {
     Template template = findTemplateById(templatesId);
-    // TODO: 추후 인증 후 유저 ID와 템플릿 판매자 ID와 비교 후 예외처리 로직 추가
+    validateTemplateOwner(template, userProfile.getId());
+
     Category category = categoryService.findCategoryById(request.categoryId());
 
     template.update(
         request.title(), request.description(), request.price(), request.image(), category);
+
+    if (file != null && !file.isEmpty()) {
+      TemplateFile templateFile = templateFileService.updateFile(template.getTemplateFile(), file);
+      template.setTemplateFile(templateFile);
+    }
+
     return template;
   }
 
   @Transactional
-  public void delete(Long templatesId) {
+  public void delete(Long templatesId, UserProfile userProfile) {
     Template template = findTemplateById(templatesId);
 
-    // TODO: 현재 로그인한 유저의 ID와 템플릿의 판매자 ID 비교 후 권한 체크
+    validateTemplateOwner(template, userProfile.getId());
     templateRepository.delete(template);
   }
 
@@ -82,5 +96,11 @@ public class TemplateService {
     return templateRepository
         .findById(templatesId)
         .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
+  }
+
+  private void validateTemplateOwner(Template template, Long userId) {
+    if (!template.getSeller().getId().equals(userId)) {
+      throw new CustomException(ErrorCode.TEMPLATE_ACCESS_DENIED);
+    }
   }
 }

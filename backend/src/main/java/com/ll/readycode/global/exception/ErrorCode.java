@@ -38,6 +38,7 @@ public enum ErrorCode {
   DUPLICATE_TEMPLATE(HttpStatus.CONFLICT, "T002", "이미 동일한 템플릿이 존재합니다."),
   TEMPLATE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "T003", "템플릿 업로드에 실패했습니다."),
   INVALID_TEMPLATE_META(HttpStatus.BAD_REQUEST, "T004", "템플릿 메타 정보가 유효하지 않습니다."),
+  TEMPLATE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "T005", "템플릿에 대한 수정 권한이 없습니다."),
 
   // 템플릿 구매 (TemplatePurchase)
   ALREADY_PURCHASED(HttpStatus.CONFLICT, "TP001", "이미 구매한 템플릿입니다."),
@@ -52,7 +53,6 @@ public enum ErrorCode {
   FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "F004", "파일 크기가 허용치를 초과했습니다."),
   INVALID_FILENAME(HttpStatus.BAD_REQUEST, "F005", "파일 이름을 확인할 수 없습니다."),
 
-  // 템플릿 다운로드 (TemplateDownload)
   // 템플릿 다운로드 (TemplateDownload)
   DOWNLOAD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "TD001", "다운로드 횟수를 초과했습니다."),
   DOWNLOAD_NOT_FOUND(HttpStatus.NOT_FOUND, "TD002", "다운로드 내역이 존재하지 않습니다."),

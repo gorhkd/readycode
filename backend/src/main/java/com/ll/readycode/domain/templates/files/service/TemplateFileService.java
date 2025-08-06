@@ -67,17 +67,15 @@ public class TemplateFileService {
   }
 
   private TemplateFile createTemplateFile(MultipartFile file, String savedPath) {
-    String extension = getFileExtension(file.getOriginalFilename());
+    String originalFilename = file.getOriginalFilename();
+    String extension = getFileExtension(originalFilename);
 
-    TemplateFile templateFile =
-        TemplateFile.builder()
-            .originalFilename(file.getOriginalFilename())
-            .extension(extension)
-            .fileSize(file.getSize())
-            .url(savedPath)
-            .build();
-
-    return templateFileRepository.save(templateFile);
+    return TemplateFile.builder()
+        .originalFilename(originalFilename)
+        .extension(extension)
+        .fileSize(file.getSize())
+        .url(savedPath)
+        .build();
   }
 
   private String getFileExtension(String filename) {
@@ -89,6 +87,15 @@ public class TemplateFileService {
 
   private boolean isAllowedExtension(String extension) {
     return List.of("zip", "rar", "txt", "java", "pdf").contains(extension);
+  }
+
+  public TemplateFile updateFile(TemplateFile oldFile, MultipartFile newFile) {
+    File file = new File(oldFile.getUrl());
+    if (file.exists()) {
+      file.delete();
+    }
+
+    return create(newFile);
   }
 
   public TemplateFile findByTemplateId(Long templateId) {
