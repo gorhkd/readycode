@@ -12,7 +12,7 @@ function Home() {
   const rightFilters = ['최신순', '인기순']
 
   return (
-    <main className="flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center">
       <div className="flex justify-between w-full">
         <div className="flex justify-center items-center gap-1">
           <FadersHorizontalIcon size={20} />
@@ -40,6 +40,6 @@ function Home() {
           </Link>
         ))}
       </div>
-    </main>
+      </div>
   )
 }
