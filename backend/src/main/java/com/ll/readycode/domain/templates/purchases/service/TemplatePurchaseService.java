@@ -23,9 +23,7 @@ public class TemplatePurchaseService {
 
   @Transactional
   public void purchaseFreeTemplate(UserProfile userProfile, Long templateId) {
-    boolean alreadyPurchased =
-        templatePurchaseRepository.existsByBuyerIdAndTemplateId(userProfile.getId(), templateId);
-    if (alreadyPurchased) {
+    if (templatePurchaseRepository.existsByBuyerIdAndTemplateId(userProfile.getId(), templateId)) {
       throw new CustomException(ErrorCode.ALREADY_PURCHASED);
     }
 
