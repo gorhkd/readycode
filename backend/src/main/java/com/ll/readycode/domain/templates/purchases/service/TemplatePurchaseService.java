@@ -1,6 +1,7 @@
 package com.ll.readycode.domain.templates.purchases.service;
 
 import com.ll.readycode.api.templates.dto.response.PurchasedTemplateResponse;
+import com.ll.readycode.domain.reviews.reader.ReviewReader;
 import com.ll.readycode.domain.templates.purchases.entity.TemplatePurchase;
 import com.ll.readycode.domain.templates.purchases.repository.TemplatePurchaseRepository;
 import com.ll.readycode.domain.templates.templates.entity.Template;
@@ -9,6 +10,8 @@ import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ public class TemplatePurchaseService {
 
   private final TemplatePurchaseRepository templatePurchaseRepository;
   private final TemplateService templateService;
+  private final ReviewReader reviewReader;
 
   @Transactional
   public void purchaseFreeTemplate(UserProfile userProfile, Long templateId) {
@@ -52,10 +56,20 @@ public class TemplatePurchaseService {
   public List<PurchasedTemplateResponse> getPurchasedTemplates(Long userId) {
     List<TemplatePurchase> purchases = templatePurchaseRepository.findByBuyerIdWithTemplate(userId);
 
+    Set<Long> templateIds =
+        purchases.stream().map(p -> p.getTemplate().getId()).collect(Collectors.toSet());
+    Set<Long> reviewedTemplateIds =
+        reviewReader.findTemplateIdsWithReviewByUser(userId, templateIds);
+
     return purchases.stream()
         .filter(purchase -> purchase.getTemplate() != null)
         .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
-        .map(purchase -> PurchasedTemplateResponse.of(purchase.getTemplate()))
+        .map(
+            purchase -> {
+              Template template = purchase.getTemplate();
+              boolean hasReview = reviewedTemplateIds.contains(template.getId());
+              return PurchasedTemplateResponse.of(template, hasReview);
+            })
         .toList();
   }
 

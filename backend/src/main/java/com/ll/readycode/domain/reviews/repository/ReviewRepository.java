@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ReviewRepository extends JpaRepository<Review, Long> {
-  boolean existsByUserIdAndTemplateId(Long userId, Long templateId);
+public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewRepositoryCustom {
+  boolean existsByUserProfileIdAndTemplateId(Long userId, Long templateId);
 
-  Optional<Review> findByUserIdAndTemplateId(Long userId, Long templateId);
+  Optional<Review> findByUserProfileIdAndTemplateId(Long userId, Long templateId);
 }

@@ -9,6 +9,7 @@ import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,16 +45,28 @@ public class ReviewService {
   }
 
   // 리뷰가 있으면 예외
+  @Transactional(readOnly = true)
   private void validateNotAlreadyReviewed(Long userId, Long templateId) {
-    if (reviewRepository.existsByUserIdAndTemplateId(userId, templateId)) {
+    if (reviewRepository.existsByUserProfileIdAndTemplateId(userId, templateId)) {
       throw new CustomException(ErrorCode.ALREADY_REVIEWED);
     }
   }
 
   // 리뷰가 없으면 예외
-  private Review findExistingReviewOrThrow(Long userId, Long templateId) {
-    return reviewRepository
-        .findByUserIdAndTemplateId(userId, templateId)
-        .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+  @Transactional(readOnly = true)
+  private void findExistingReviewOrThrow(Long userId, Long templateId) {
+    if (!reviewRepository.existsByUserProfileIdAndTemplateId(userId, templateId)) {
+      throw new CustomException(ErrorCode.REVIEW_NOT_FOUND);
+    }
+  }
+
+  @Transactional(readOnly = true)
+  public boolean existsByTemplateIdAndUserProfileId(Long templateId, Long userId) {
+    return reviewRepository.existsByUserProfileIdAndTemplateId(userId, templateId);
+  }
+
+  @Transactional(readOnly = true)
+  public Set<Long> findTemplateIdsWithReviewByUser(Long userId, Set<Long> templateIds) {
+    return reviewRepository.findTemplateIdsWithReviewByUser(userId, templateIds);
   }
 }
