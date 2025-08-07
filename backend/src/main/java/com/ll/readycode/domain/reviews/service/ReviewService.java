@@ -1,11 +1,59 @@
 package com.ll.readycode.domain.reviews.service;
 
+import com.ll.readycode.api.reviews.dto.request.ReviewCreateRequest;
+import com.ll.readycode.domain.reviews.entity.Review;
 import com.ll.readycode.domain.reviews.repository.ReviewRepository;
+import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
+import com.ll.readycode.domain.templates.templates.entity.Template;
+import com.ll.readycode.domain.templates.templates.service.TemplateService;
+import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.global.exception.CustomException;
+import com.ll.readycode.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
   private final ReviewRepository reviewRepository;
+  private final TemplateService templateService;
+  private final TemplatePurchaseService templatePurchaseService;
+
+  @Transactional
+  public void createReview(Long templateId, UserProfile userProfile, ReviewCreateRequest request) {
+
+    // 1. 템플릿 존재 여부 확인
+    Template template = templateService.findTemplateById(templateId);
+
+    // 2. 구매자만 리뷰 가능
+    templatePurchaseService.validatePurchasedOrThrow(userProfile.getId(), templateId);
+
+    // 3. 중복 리뷰 방지 (한 사용자당 하나의 리뷰만 허용)
+    validateNotAlreadyReviewed(userProfile.getId(), templateId);
+
+    Review review =
+        Review.builder()
+            .template(template)
+            .userProfile(userProfile)
+            .rating(request.rating())
+            .content(request.content())
+            .build();
+
+    reviewRepository.save(review);
+  }
+
+  // 리뷰가 있으면 예외
+  private void validateNotAlreadyReviewed(Long userId, Long templateId) {
+    if (reviewRepository.existsByUserIdAndTemplateId(userId, templateId)) {
+      throw new CustomException(ErrorCode.ALREADY_REVIEWED);
+    }
+  }
+
+  // 리뷰가 없으면 예외
+  private Review findExistingReviewOrThrow(Long userId, Long templateId) {
+    return reviewRepository
+        .findByUserIdAndTemplateId(userId, templateId)
+        .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+  }
 }

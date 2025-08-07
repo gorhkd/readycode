@@ -63,4 +63,11 @@ public class TemplatePurchaseService {
   public boolean existsByBuyerIdAndTemplateId(Long buyerId, Long templateId) {
     return templatePurchaseRepository.existsByBuyerIdAndTemplateId(buyerId, templateId);
   }
+
+  @Transactional(readOnly = true)
+  public void validatePurchasedOrThrow(Long buyerId, Long templateId) {
+    if (!templatePurchaseRepository.existsByBuyerIdAndTemplateId(buyerId, templateId)) {
+      throw new CustomException(ErrorCode.PURCHASE_NOT_FOUND);
+    }
+  }
 }
