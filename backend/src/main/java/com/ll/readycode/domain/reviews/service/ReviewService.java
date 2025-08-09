@@ -1,6 +1,7 @@
 package com.ll.readycode.domain.reviews.service;
 
 import com.ll.readycode.api.reviews.dto.request.ReviewCreateRequest;
+import com.ll.readycode.api.reviews.dto.request.ReviewUpdateRequest;
 import com.ll.readycode.domain.reviews.entity.Review;
 import com.ll.readycode.domain.reviews.repository.ReviewRepository;
 import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
@@ -42,6 +43,20 @@ public class ReviewService {
             .build();
 
     reviewRepository.save(review);
+  }
+
+  @Transactional
+  public void updateReview(Long templateId, UserProfile userProfile, ReviewUpdateRequest request) {
+    Review review =
+        reviewRepository
+            .findByUserProfileIdAndTemplateId(userProfile.getId(), templateId)
+            .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
+    if (!review.getUserProfile().getId().equals(userProfile.getId())) {
+      throw new CustomException(ErrorCode.REVIEW_FORBIDDEN);
+    }
+
+    review.updateReview(request.content(), request.rating());
   }
 
   // 리뷰가 있으면 예외

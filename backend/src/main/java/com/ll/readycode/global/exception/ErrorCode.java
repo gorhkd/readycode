@@ -52,6 +52,7 @@ public enum ErrorCode {
   // 리뷰 (Review)
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "리뷰를 찾을 수 없습니다."),
   ALREADY_REVIEWED(HttpStatus.CONFLICT, "R002", "이미 리뷰를 작성하였습니다."),
+  REVIEW_FORBIDDEN(HttpStatus.FORBIDDEN, "R003", "리뷰에 대한 접근이 거부되었습니다."),
 
   // 카테고리 (Category)
   CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CAT001", "카테고리를 찾을 수 없습니다."),
