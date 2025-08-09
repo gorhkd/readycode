@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public class ReviewResponse {
 
-  private Long id;
+  private Long reviewId;
   private Long templateId;
   private Long userProfileId;
   private String authorNickname;
@@ -16,7 +16,7 @@ public class ReviewResponse {
 
   public static ReviewResponse of(Review review) {
     ReviewResponse dto = new ReviewResponse();
-    dto.id = review.getId();
+    dto.reviewId = review.getId();
     dto.templateId = review.getTemplate().getId();
     dto.userProfileId = review.getUserProfile().getId();
     dto.authorNickname = review.getUserProfile().getNickname();
