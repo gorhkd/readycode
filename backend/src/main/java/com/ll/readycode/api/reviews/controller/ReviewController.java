@@ -29,11 +29,19 @@ public class ReviewController {
 
   @PatchMapping("/{templateId}")
   @Operation(summary = "리뷰 수정", description = "내가 작성한 해당 템플릿의 리뷰를 수정합니다.")
-  public ResponseEntity<Void> modifyReview(
+  public ResponseEntity<Void> updateReview(
       @PathVariable Long templateId,
       @RequestBody @Valid ReviewUpdateRequest request,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
     reviewService.updateReview(templateId, userPrincipal.getUserProfile(), request);
+    return ResponseEntity.ok().build();
+  }
+
+  @DeleteMapping("/{templateId}")
+  @Operation(summary = "리뷰 삭제", description = "내가 작성한 해당 템플릿의 리뷰를 삭제합니다.")
+  public ResponseEntity<Void> deleteReview(
+      @PathVariable Long templateId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    reviewService.deleteReview(templateId, userPrincipal.getUserProfile());
     return ResponseEntity.ok().build();
   }
 }

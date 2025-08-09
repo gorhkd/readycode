@@ -52,11 +52,17 @@ public class ReviewService {
             .findByUserProfileIdAndTemplateId(userProfile.getId(), templateId)
             .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
 
-    if (!review.getUserProfile().getId().equals(userProfile.getId())) {
-      throw new CustomException(ErrorCode.REVIEW_FORBIDDEN);
-    }
-
     review.updateReview(request.content(), request.rating());
+  }
+
+  @Transactional
+  public void deleteReview(Long templateId, UserProfile userProfile) {
+    Review review =
+        reviewRepository
+            .findByUserProfileIdAndTemplateId(userProfile.getId(), templateId)
+            .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
+
+    reviewRepository.delete(review);
   }
 
   // 리뷰가 있으면 예외
