@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 public class TemplateFile extends BaseCreatedOnlyEntity {
   @Column(nullable = false)
-  private String originalName;
+  private String originalFilename;
 
   @Column(nullable = false, length = 512)
   private String url;
@@ -28,4 +28,8 @@ public class TemplateFile extends BaseCreatedOnlyEntity {
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "template_id", nullable = false)
   private Template template;
+
+  public void setTemplate(Template template) {
+    this.template = template;
+  }
 }
