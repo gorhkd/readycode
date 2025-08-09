@@ -23,7 +23,8 @@ public class ReviewService {
   private final TemplatePurchaseService templatePurchaseService;
 
   @Transactional
-  public void createReview(Long templateId, UserProfile userProfile, ReviewCreateRequest request) {
+  public Review createReview(
+      Long templateId, UserProfile userProfile, ReviewCreateRequest request) {
 
     // 1. 템플릿 존재 여부 확인
     Template template = templateService.findTemplateById(templateId);
@@ -42,27 +43,30 @@ public class ReviewService {
             .content(request.content())
             .build();
 
-    reviewRepository.save(review);
+    return reviewRepository.save(review);
   }
 
   @Transactional
-  public void updateReview(Long templateId, UserProfile userProfile, ReviewUpdateRequest request) {
+  public Review updateReview(
+      Long templateId, UserProfile userProfile, ReviewUpdateRequest request) {
     Review review =
         reviewRepository
             .findByUserProfileIdAndTemplateId(userProfile.getId(), templateId)
             .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
 
     review.updateReview(request.content(), request.rating());
+    return review;
   }
 
   @Transactional
-  public void deleteReview(Long templateId, UserProfile userProfile) {
+  public Long deleteReview(Long templateId, UserProfile userProfile) {
     Review review =
         reviewRepository
             .findByUserProfileIdAndTemplateId(userProfile.getId(), templateId)
             .orElseThrow(() -> new CustomException(ErrorCode.REVIEW_NOT_FOUND));
 
     reviewRepository.delete(review);
+    return templateId;
   }
 
   // 리뷰가 있으면 예외
