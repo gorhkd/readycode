@@ -4,7 +4,6 @@ import com.ll.readycode.api.reviews.dto.request.ReviewCreateRequest;
 import com.ll.readycode.api.reviews.dto.request.ReviewUpdateRequest;
 import com.ll.readycode.api.reviews.dto.response.ReviewResponse;
 import com.ll.readycode.api.reviews.dto.response.ReviewSummaryResponse;
-import com.ll.readycode.domain.reviews.entity.Review;
 import com.ll.readycode.domain.reviews.service.ReviewService;
 import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.common.response.SuccessResponse;
@@ -29,17 +28,18 @@ public class ReviewController {
       @PathVariable Long templateId,
       @RequestBody @Valid ReviewCreateRequest request,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
-    Review review = reviewService.createReview(templateId, userPrincipal.getUserProfile(), request);
+    ReviewResponse response =
+        reviewService.createReview(templateId, userPrincipal.getUserProfile(), request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(SuccessResponse.of("리뷰가 생성되었습니다.", ReviewResponse.of(review)));
+        .body(SuccessResponse.of("리뷰가 생성되었습니다.", response));
   }
 
   @GetMapping("/{templateId}/me")
   @Operation(summary = "리뷰 단건 조회", description = "내가 작성한 해당 템플릿의 리뷰를 조회합니다.")
   public ResponseEntity<SuccessResponse<ReviewResponse>> getReview(
       @PathVariable Long templateId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-    Review review = reviewService.getReview(templateId, userPrincipal.getUserProfile());
-    return ResponseEntity.ok(SuccessResponse.of("리뷰 조회를 성공했습니다.", ReviewResponse.of(review)));
+    ReviewResponse response = reviewService.getReview(templateId, userPrincipal.getUserProfile());
+    return ResponseEntity.ok(SuccessResponse.of("리뷰 조회를 성공했습니다.", response));
   }
 
   @GetMapping("/{templateId}")
@@ -56,8 +56,9 @@ public class ReviewController {
       @PathVariable Long templateId,
       @RequestBody @Valid ReviewUpdateRequest request,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
-    Review review = reviewService.updateReview(templateId, userPrincipal.getUserProfile(), request);
-    return ResponseEntity.ok(SuccessResponse.of("리뷰가 수정되었습니다.", ReviewResponse.of(review)));
+    ReviewResponse response =
+        reviewService.updateReview(templateId, userPrincipal.getUserProfile(), request);
+    return ResponseEntity.ok(SuccessResponse.of("리뷰가 수정되었습니다.", response));
   }
 
   @DeleteMapping("/{templateId}/me")
