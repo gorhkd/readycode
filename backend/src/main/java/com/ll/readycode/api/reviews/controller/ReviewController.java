@@ -2,6 +2,7 @@ package com.ll.readycode.api.reviews.controller;
 
 import com.ll.readycode.api.reviews.dto.request.ReviewCreateRequest;
 import com.ll.readycode.api.reviews.dto.request.ReviewUpdateRequest;
+import com.ll.readycode.api.reviews.dto.response.CursorPage;
 import com.ll.readycode.api.reviews.dto.response.ReviewResponse;
 import com.ll.readycode.api.reviews.dto.response.ReviewSummaryResponse;
 import com.ll.readycode.domain.reviews.service.ReviewService;
@@ -9,7 +10,8 @@ import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import java.util.List;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,10 +45,15 @@ public class ReviewController {
   }
 
   @GetMapping("/{templateId}")
-  @Operation(summary = "리뷰 목록 조회", description = "해당 템플릿의 리뷰를 조회합니다.")
-  public ResponseEntity<SuccessResponse<List<ReviewSummaryResponse>>> getReviewList(
-      @PathVariable Long templateId) {
-    List<ReviewSummaryResponse> list = reviewService.getReviewList(templateId);
+  @Operation(summary = "리뷰 목록 조회", description = "해당 템플릿의 리뷰 목록을 조회합니다. 무한스크롤 + 정렬 조건 지원.")
+  public ResponseEntity<SuccessResponse<CursorPage<ReviewSummaryResponse>>> getReviewList(
+      @PathVariable Long templateId,
+      @RequestParam(required = false) String cursor,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit,
+      @RequestParam(defaultValue = "LATEST") String sort,
+      @RequestParam(defaultValue = "DESC") String order) {
+    CursorPage<ReviewSummaryResponse> list =
+        reviewService.getReviewList(templateId, cursor, limit, sort, order);
     return ResponseEntity.ok(SuccessResponse.of(list));
   }
 

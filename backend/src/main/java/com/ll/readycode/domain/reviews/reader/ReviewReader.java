@@ -1,6 +1,8 @@
 package com.ll.readycode.domain.reviews.reader;
 
 import com.ll.readycode.domain.reviews.entity.Review;
+import com.ll.readycode.domain.reviews.enums.OrderType;
+import com.ll.readycode.domain.reviews.enums.SortType;
 import com.ll.readycode.domain.reviews.repository.ReviewRepository;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
@@ -35,7 +37,9 @@ public class ReviewReader {
   }
 
   // 템플릿별 리뷰 목록 조회
-  public List<Review> findByTemplate(Long templateId) {
-    return reviewRepository.findByTemplateId(templateId);
+  public List<Review> findByTemplateWithCursor(
+      Long templateId, String cursor, int limit, SortType sortType, OrderType orderType) {
+    return reviewRepository.findByTemplateWithCursor(
+        templateId, cursor, limit, sortType, orderType);
   }
 }

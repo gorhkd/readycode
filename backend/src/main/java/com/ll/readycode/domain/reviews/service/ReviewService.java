@@ -2,9 +2,12 @@ package com.ll.readycode.domain.reviews.service;
 
 import com.ll.readycode.api.reviews.dto.request.ReviewCreateRequest;
 import com.ll.readycode.api.reviews.dto.request.ReviewUpdateRequest;
+import com.ll.readycode.api.reviews.dto.response.CursorPage;
 import com.ll.readycode.api.reviews.dto.response.ReviewResponse;
 import com.ll.readycode.api.reviews.dto.response.ReviewSummaryResponse;
 import com.ll.readycode.domain.reviews.entity.Review;
+import com.ll.readycode.domain.reviews.enums.OrderType;
+import com.ll.readycode.domain.reviews.enums.SortType;
 import com.ll.readycode.domain.reviews.reader.ReviewReader;
 import com.ll.readycode.domain.reviews.repository.ReviewRepository;
 import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
@@ -47,6 +50,27 @@ public class ReviewService {
   }
 
   @Transactional(readOnly = true)
+  public CursorPage<ReviewSummaryResponse> getReviewList(
+      Long templateId, String cursor, Integer limit, String sort, String order) {
+    SortType sortType = SortType.from(sort);
+    OrderType orderType = OrderType.from(order);
+    int pageSize = (limit == null) ? 10 : Math.min(Math.max(limit, 1), 50);
+
+    List<Review> rows =
+        reviewReader.findByTemplateWithCursor(
+            templateId, cursor, pageSize + 1, sortType, orderType);
+
+    boolean hasNext = rows.size() > pageSize;
+    if (hasNext) rows = rows.subList(0, pageSize);
+
+    String nextCursor = hasNext ? encodeCursor(rows.get(rows.size() - 1), sortType) : null;
+
+    List<ReviewSummaryResponse> items = rows.stream().map(ReviewSummaryResponse::of).toList();
+
+    return new CursorPage<>(items, nextCursor, hasNext);
+  }
+
+  @Transactional(readOnly = true)
   public ReviewResponse getReview(Long templateId, UserProfile user) {
     Review review = reviewReader.getByUserAndTemplate(user.getId(), templateId);
     return ReviewResponse.of(review); // DTO 변환은 Service에서
@@ -67,15 +91,16 @@ public class ReviewService {
     return deletedId;
   }
 
-  @Transactional(readOnly = true)
-  public List<ReviewSummaryResponse> getReviewList(Long templateId) {
-    List<Review> reviews = reviewReader.findByTemplate(templateId);
-    return reviews.stream().map(ReviewSummaryResponse::of).toList();
-  }
-
   private void validateNotAlreadyReviewed(Long userId, Long templateId) {
     if (reviewReader.existsByUserAndTemplate(userId, templateId)) {
       throw new CustomException(ErrorCode.ALREADY_REVIEWED);
     }
+  }
+
+  private String encodeCursor(Review r, SortType sortType) {
+    if (sortType == SortType.RATING) {
+      return r.getRating() + "|" + r.getId();
+    }
+    return r.getCreatedAt() + "|" + r.getId();
   }
 }
