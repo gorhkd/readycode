@@ -27,7 +27,6 @@ public class TemplateService {
   @Transactional
   public Template create(TemplateCreateRequest request, UserProfile userProfile) {
     Category category = categoryService.findCategoryById(request.categoryId());
-    // TODO: 추후 인증 구현 후 SecurityContext에서 seller(UserProfile) 가져오기
 
     Template template =
         Template.builder()
@@ -62,7 +61,7 @@ public class TemplateService {
     templateRepository.delete(template);
   }
 
-  public TemplateScrollResponse getTemplates(LocalDateTime cursor, int limit) {
+  public TemplateScrollResponse getTemplateList(LocalDateTime cursor, int limit) {
     List<Template> templates = templateRepository.findScrollTemplates(cursor, limit);
 
     LocalDateTime nextCursor =
