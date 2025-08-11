@@ -9,6 +9,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashSet;
@@ -66,9 +67,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
     }
 
     if (sortType == SortType.RATING) {
-      double curRating;
+      BigDecimal curRating;
       try {
-        curRating = Double.parseDouble(parts[0]);
+        curRating = new BigDecimal(parts[0]);
       } catch (NumberFormatException e) {
         return null;
       }

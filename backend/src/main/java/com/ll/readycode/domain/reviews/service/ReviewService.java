@@ -109,7 +109,7 @@ public class ReviewService {
 
   private String encodeCursor(Review r, SortType sortType) {
     if (sortType == SortType.RATING) {
-      return r.getRating() + "|" + r.getId();
+      return r.getRating().toPlainString() + "|" + r.getId();
     }
     return r.getCreatedAt() + "|" + r.getId();
   }
