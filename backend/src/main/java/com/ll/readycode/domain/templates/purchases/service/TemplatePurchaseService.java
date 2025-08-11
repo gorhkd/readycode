@@ -56,13 +56,19 @@ public class TemplatePurchaseService {
   public List<PurchasedTemplateResponse> getPurchasedTemplates(Long userId) {
     List<TemplatePurchase> purchases = templatePurchaseRepository.findByBuyerIdWithTemplate(userId);
 
+    List<TemplatePurchase> valid = purchases.stream().filter(p -> p.getTemplate() != null).toList();
+
+    if (valid.isEmpty()) {
+      return List.of();
+    }
+
     Set<Long> templateIds =
-        purchases.stream().map(p -> p.getTemplate().getId()).collect(Collectors.toSet());
+        valid.stream().map(p -> p.getTemplate().getId()).collect(Collectors.toSet());
+
     Set<Long> reviewedTemplateIds =
         reviewReader.findTemplateIdsWithReviewByUser(userId, templateIds);
 
-    return purchases.stream()
-        .filter(purchase -> purchase.getTemplate() != null)
+    return valid.stream()
         .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
         .map(
             purchase -> {
