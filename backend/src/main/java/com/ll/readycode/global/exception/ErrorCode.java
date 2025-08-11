@@ -38,6 +38,7 @@ public enum ErrorCode {
   DUPLICATE_TEMPLATE(HttpStatus.CONFLICT, "T002", "이미 동일한 템플릿이 존재합니다."),
   TEMPLATE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "T003", "템플릿 업로드에 실패했습니다."),
   INVALID_TEMPLATE_META(HttpStatus.BAD_REQUEST, "T004", "템플릿 메타 정보가 유효하지 않습니다."),
+  TEMPLATE_FORBIDDEN(HttpStatus.FORBIDDEN, "T005", "템플릿에 대한 접근이 거부되었습니다."),
 
   // 템플릿 구매 (TemplatePurchase)
   ALREADY_PURCHASED(HttpStatus.CONFLICT, "TP001", "이미 구매한 템플릿입니다."),
