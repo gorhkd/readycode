@@ -16,6 +16,7 @@ import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
+import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,8 @@ public class ReviewService {
             .build();
 
     Review saved = reviewRepository.save(review);
+
+    template.addReview((req.rating()));
     return ReviewResponse.of(saved);
   }
 
@@ -79,14 +82,21 @@ public class ReviewService {
   @Transactional
   public ReviewResponse updateReview(Long templateId, UserProfile user, ReviewUpdateRequest req) {
     Review review = reviewReader.getByUserAndTemplate(user.getId(), templateId);
+    Template template = templateService.findTemplateById(templateId);
+    BigDecimal old = review.getRating();
+
     review.updateReview(req.content(), req.rating());
+    template.updateReview(old, req.rating());
     return ReviewResponse.of(review);
   }
 
   @Transactional
   public Long deleteReview(Long templateId, UserProfile user) {
     Review review = reviewReader.getByUserAndTemplate(user.getId(), templateId);
+    Template template = templateService.findTemplateById(templateId);
     Long deletedId = review.getId();
+
+    template.removeReview(review.getRating());
     reviewRepository.delete(review);
     return deletedId;
   }

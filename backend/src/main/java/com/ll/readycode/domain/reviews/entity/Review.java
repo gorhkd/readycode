@@ -4,6 +4,7 @@ import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,12 +28,12 @@ public class Review extends BaseEntity {
   private UserProfile userProfile;
 
   @Column(nullable = false)
-  private Double rating;
+  private BigDecimal rating;
 
   @Column(nullable = false, length = 1000)
   private String content;
 
-  public void updateReview(String content, Double rating) {
+  public void updateReview(String content, BigDecimal rating) {
     this.content = content;
     this.rating = rating;
   }
