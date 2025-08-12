@@ -4,7 +4,9 @@ import com.ll.readycode.domain.reviews.entity.Review;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import lombok.Getter;
 
+@Getter
 public class ReviewResponse {
 
   private Long reviewId;
