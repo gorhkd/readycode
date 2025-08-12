@@ -11,14 +11,16 @@ public record PurchasedTemplateResponse(
     @Schema(description = "템플릿 설명", example = "JWT를 이용한 로그인 기능 템플릿입니다.") String description,
     @Schema(description = "템플릿 가격", example = "100") int price,
     @Schema(description = "카테고리 이름", example = "백엔드") String category,
-    @Schema(description = "템플릿 생성일시", example = "2025-08-03T13:44:00") LocalDateTime createdAt) {
-  public static PurchasedTemplateResponse of(Template template) {
+    @Schema(description = "템플릿 생성일시", example = "2025-08-03T13:44:00") LocalDateTime createdAt,
+    @Schema(description = "리뷰 여부", example = "false") boolean hasReview) {
+  public static PurchasedTemplateResponse of(Template template, boolean hasReview) {
     return new PurchasedTemplateResponse(
         template.getId(),
         template.getTitle(),
         template.getDescription(),
         template.getPrice(),
         template.getCategory().getName(),
-        template.getCreatedAt());
+        template.getCreatedAt(),
+        hasReview);
   }
 }

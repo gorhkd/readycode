@@ -27,7 +27,6 @@ public class TemplateService {
   @Transactional
   public Template create(TemplateCreateRequest request, UserProfile userProfile) {
     Category category = categoryService.findCategoryById(request.categoryId());
-    // TODO: 추후 인증 구현 후 SecurityContext에서 seller(UserProfile) 가져오기
 
     Template template =
         Template.builder()
@@ -44,10 +43,11 @@ public class TemplateService {
   }
 
   @Transactional
-  public Template update(Long templatesId, @Valid TemplateUpdateRequest request) {
+  public Template update(
+      Long templatesId, @Valid TemplateUpdateRequest request, Long userProfileId) {
     Template template = findTemplateById(templatesId);
-    // TODO: 추후 인증 후 유저 ID와 템플릿 판매자 ID와 비교 후 예외처리 로직 추가
     Category category = categoryService.findCategoryById(request.categoryId());
+    validateOwner(template, userProfileId);
 
     template.update(
         request.title(), request.description(), request.price(), request.image(), category);
@@ -55,14 +55,14 @@ public class TemplateService {
   }
 
   @Transactional
-  public void delete(Long templatesId) {
+  public void delete(Long templatesId, Long userProfileId) {
     Template template = findTemplateById(templatesId);
 
-    // TODO: 현재 로그인한 유저의 ID와 템플릿의 판매자 ID 비교 후 권한 체크
+    validateOwner(template, userProfileId);
     templateRepository.delete(template);
   }
 
-  public TemplateScrollResponse getTemplates(LocalDateTime cursor, int limit) {
+  public TemplateScrollResponse getTemplateList(LocalDateTime cursor, int limit) {
     List<Template> templates = templateRepository.findScrollTemplates(cursor, limit);
 
     LocalDateTime nextCursor =
@@ -78,5 +78,11 @@ public class TemplateService {
     return templateRepository
         .findById(templatesId)
         .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
+  }
+
+  private void validateOwner(Template template, Long userProfileId) {
+    if (!template.getSeller().getId().equals(userProfileId)) {
+      throw new CustomException(ErrorCode.TEMPLATE_FORBIDDEN);
+    }
   }
 }

@@ -40,6 +40,7 @@ class TemplateServiceTest {
 
   UserProfile userProfile =
       UserProfile.builder()
+          .id(1L)
           .nickname("abc")
           .phoneNumber("010")
           .role(UserRole.USER)
@@ -54,6 +55,7 @@ class TemplateServiceTest {
         .description("Old")
         .price(100)
         .image("old.png")
+        .seller(userProfile)
         .category(category)
         .createdAt(localDateTime)
         .build();
@@ -90,7 +92,7 @@ class TemplateServiceTest {
     given(categoryService.findCategoryById(1L)).willReturn(category1);
 
     // when
-    Template result = templateService.update(1L, request);
+    Template result = templateService.update(1L, request, userProfile.getId());
 
     // then
     assertThat(result.getTitle()).isEqualTo("New Title");
@@ -102,11 +104,11 @@ class TemplateServiceTest {
   @DisplayName("템플릿 삭제 성공")
   void deleteTemplate_success() {
     // given
-    Template template = mock(Template.class);
+    Template template = createTemplate(1L, "템플릿1", category1, LocalDateTime.now());
     given(templateRepository.findById(1L)).willReturn(Optional.of(template));
 
     // when
-    templateService.delete(1L);
+    templateService.delete(1L, userProfile.getId());
 
     // then
     verify(templateRepository).delete(template);
@@ -124,7 +126,7 @@ class TemplateServiceTest {
     given(templateRepository.findScrollTemplates(null, 10)).willReturn(templates);
 
     // when
-    TemplateScrollResponse response = templateService.getTemplates(null, 10);
+    TemplateScrollResponse response = templateService.getTemplateList(null, 10);
 
     // then
     assertThat(response.templates()).hasSize(2);
@@ -145,7 +147,7 @@ class TemplateServiceTest {
     given(templateRepository.findScrollTemplates(cursor, 10)).willReturn(templates);
 
     // when
-    TemplateScrollResponse response = templateService.getTemplates(cursor, 10);
+    TemplateScrollResponse response = templateService.getTemplateList(cursor, 10);
 
     // then
     assertThat(response.templates()).hasSize(2);
@@ -159,7 +161,7 @@ class TemplateServiceTest {
     given(templateRepository.findScrollTemplates(null, 10)).willReturn(List.of());
 
     // when
-    TemplateScrollResponse response = templateService.getTemplates(null, 10);
+    TemplateScrollResponse response = templateService.getTemplateList(null, 10);
 
     // then
     assertThat(response.templates()).isEmpty();
