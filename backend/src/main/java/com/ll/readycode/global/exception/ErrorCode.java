@@ -22,7 +22,8 @@ public enum ErrorCode {
   PROFILE_ALREADY_EXISTS(HttpStatus.CONFLICT, "UP001", "이미 프로필이 존재합니다."),
   PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "UP002", "프로필 정보를 찾을 수 없습니다."),
   INVALID_USAGE_PURPOSE(HttpStatus.BAD_REQUEST, "UP003", "존재하지 않는 가입 목적입니다."),
-  ALREADY_ACTIVE_USER(HttpStatus.BAD_REQUEST, "UP004", "이미 활성화된 사용자입니다."),
+  INVALID_USAGE_ROLE(HttpStatus.BAD_REQUEST, "UP004", "존재하지 않는 사용자 권한입니다."),
+  ALREADY_ACTIVE_USER(HttpStatus.BAD_REQUEST, "UP005", "이미 활성화된 사용자입니다."),
 
   // 인증/인가
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A001", "인증이 필요합니다."),
@@ -42,6 +43,7 @@ public enum ErrorCode {
   ALREADY_PURCHASED(HttpStatus.CONFLICT, "TP001", "이미 구매한 템플릿입니다."),
   PURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "TP002", "구매 내역을 찾을 수 없습니다."),
   INSUFFICIENT_POINTS(HttpStatus.BAD_REQUEST, "TP003", "포인트가 부족합니다."),
+  NOT_FREE_TEMPLATE(HttpStatus.BAD_REQUEST, "TP004", "유료 템플릿은 해당 API로 구매할 수 없습니다."),
 
   // 템플릿 다운로드 (TemplateDownload)
   DOWNLOAD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "TD001", "다운로드 횟수를 초과했습니다."),
