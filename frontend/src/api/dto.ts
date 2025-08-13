@@ -4,15 +4,63 @@
  */
 
 export interface paths {
-    "/templates": {
+    "/api/users/signup": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
+        /**
+         * 회원가입
+         * @description 임시 토큰을 가진 사용자를 대상으로 회원가입 후 인증에 사용될 토큰을 반환합니다.
+         */
+        post: operations["signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/me/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 회원 탈퇴 취소
+         * @description 회원 탈퇴 취소 요청 시, 회원 탈퇴 상태를 변경합니다.
+         */
+        post: operations["restoreProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 템플릿 목록 조회
+         * @description 템플릿을 최신순 기준으로 커서 기반 페이징 방식으로 조회합니다.
+         */
         get: operations["getTemplates"];
         put?: never;
+        /**
+         * 템플릿 생성
+         * @description 템플릿을 생성합니다.
+         */
         post: operations["createTemplate"];
         delete?: never;
         options?: never;
@@ -20,15 +68,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/categories": {
+    "/api/purchases/{templateId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
+        /**
+         * 템플릿 구매 (무료 담기)
+         * @description 무료 템플릿을 구매 내역에 추가합니다.
+         */
+        post: operations["purchaseTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 카테고리 목록 조회
+         * @description 카테고리 목록을 조회합니다.
+         */
         get: operations["getAllCategories"];
         put?: never;
+        /**
+         * 카테고리 생성
+         * @description 카테고리를 생성합니다.
+         */
         post: operations["createCategory"];
         delete?: never;
         options?: never;
@@ -45,6 +121,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * 인증 토큰 재발급
+         * @description 토큰이 만료되었을 경우, 유효한 인증 토큰을 대상으로 재발급합니다.
+         */
         post: operations["reissue"];
         delete?: never;
         options?: never;
@@ -61,6 +141,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * 로그아웃
+         * @description 해당 유저의 인증 토큰을 삭제하고 로그아웃합니다.
+         */
         post: operations["logout"];
         delete?: never;
         options?: never;
@@ -77,6 +161,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * SNS별 로그인
+         * @description SNS별 로그인 후 인증에 사용될 토큰을 반환합니다.
+         */
         post: operations["login"];
         delete?: never;
         options?: never;
@@ -84,23 +172,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/templates/{templatesId}": {
+    "/api/users/me": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        /**
+         * 회원 정보 조회
+         * @description 회원 프로필과 연동된 SNS 정보를 조회합니다.
+         */
+        get: operations["getProfileWithSocialInfo"];
+        put?: never;
+        post?: never;
+        /**
+         * 회원 탈퇴
+         * @description 회원 탈퇴 요청 시, 회원 탈퇴 상태를 변경합니다.
+         */
+        delete: operations["deleteProfile"];
+        options?: never;
+        head?: never;
+        /**
+         * 회원 프로필 정보 수정
+         * @description 회원 프로필을 수정합니다.
+         */
+        patch: operations["updateProfile"];
+        trace?: never;
+    };
+    "/api/templates/{templatesId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 템플릿 상세 조회
+         * @description 템플릿 ID를 기준으로 상세 정보를 조회합니다.
+         */
         get: operations["detailsTemplate"];
         put?: never;
         post?: never;
-        delete: operations["modifyTemplate"];
+        /**
+         * 템플릿 삭제
+         * @description 템플릿 ID를 기준으로 삭제합니다.
+         */
+        delete: operations["deleteTemplate"];
         options?: never;
         head?: never;
-        patch: operations["modifyTemplate_1"];
+        /**
+         * 템플릿 수정
+         * @description 템플릿 ID를 기준으로 수정합니다.
+         */
+        patch: operations["modifyTemplate"];
         trace?: never;
     };
-    "/categories/{categoriesId}": {
+    "/api/categories/{categoriesId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -110,23 +238,127 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
+        /**
+         * 카테고리를 삭제
+         * @description 카테고리를 ID를 기준으로 삭제합니다.
+         */
         delete: operations["deleteCategory"];
         options?: never;
         head?: never;
+        /**
+         * 카테고리를 수정
+         * @description 카테고리 ID를 기준으로 수정합니다.
+         */
         patch: operations["updateCategory"];
+        trace?: never;
+    };
+    "/api/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 마이페이지 구매 내역 조회
+         * @description 사용자가 구매한 템플릿 목록을 조회합니다.
+         */
+        get: operations["getMyPurchases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        TemplateCreateRequest: {
-            title: string;
-            description: string;
+        /** @description 회원가입 요청 DTO */
+        Signup: {
+            /**
+             * @description 닉네임 (2~20자, 특수문자 제외)
+             * @example readyUser
+             */
+            nickname: string;
+            /**
+             * @description 휴대폰 번호
+             * @example 010-1234-5678
+             */
+            phoneNumber: string;
+            /**
+             * @description 가입 목적 (예: LEARNING, LECTURE)
+             * @example LEARNING
+             * @enum {string}
+             */
+            purpose: "학습용" | "강의용";
+            /**
+             * @description 사용자 권한 (예: USER, ADMIN
+             * @example USER
+             * @enum {string}
+             */
+            userRole: "일반유저" | "관리자";
+        };
+        SuccessResponseToken: {
             /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["Token"];
+        };
+        /** @description 토큰 응답 DTO */
+        Token: {
+            /**
+             * @description 액세스 토큰
+             * @example eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMiLCJpYXQiOjE3MDE1MDM4NDksImV4cCI6MTcwMTUwNDIwOX0.pDlZhx7nBBr_Q9qWZKUcq3KgoZ7ePQUf6pDgHTYFcDk
+             */
+            accessToken?: string;
+            /**
+             * @description 리프레시 토큰
+             * @example cc3dc914-646c-4fd1-8044-78d54e4b4e44
+             */
+            refreshToken?: string;
+            /**
+             * @description 회원 등록 여부
+             * @example true
+             */
+            isRegistered?: boolean;
+        };
+        SuccessResponseVoid: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: Record<string, never>;
+        };
+        /** @description 템플릿 생성 요청 DTO */
+        TemplateCreateRequest: {
+            /**
+             * @description 템플릿 제목
+             * @example 나만의 로그인 템플릿
+             */
+            title: string;
+            /**
+             * @description 템플릿 설명
+             * @example JWT 기반 로그인 기능 포함
+             */
+            description: string;
+            /**
+             * Format: int32
+             * @description 템플릿 가격 (포인트 단위)
+             * @example 300
+             */
             price?: number;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 카테고리 ID
+             * @example 1
+             */
             categoryId: number;
+            /**
+             * @description 대표 이미지 URL
+             * @example https://image.url/sample.png
+             */
             image: string;
         };
         SuccessResponseTemplateResponse: {
@@ -135,23 +367,60 @@ export interface components {
             message?: string;
             data?: components["schemas"]["TemplateResponse"];
         };
+        /** @description 템플릿 응답 DTO (간단 목록용) */
         TemplateResponse: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 템플릿 ID
+             * @example 17
+             */
             templateId?: number;
+            /**
+             * @description 템플릿 제목
+             * @example JWT 로그인 템플릿
+             */
             title?: string;
+            /**
+             * @description 템플릿 설명
+             * @example JWT 기반 로그인/회원가입 구현
+             */
             description?: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description 생성일시
+             * @example 2024-12-10T12:00:00
+             */
             createdAt?: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description 수정일시
+             * @example 2024-12-11T13:00:00
+             */
             updatedAt?: string;
+            /**
+             * @description 카테고리 이름
+             * @example 백엔드
+             */
             category?: string;
         };
         CategoryRequest: {
+            /**
+             * @description 카테고리 이름
+             * @example 백엔드
+             */
             name?: string;
         };
         CategoryResponse: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 카테고리 ID
+             * @example 1
+             */
             id?: number;
+            /**
+             * @description 카테고리 이름
+             * @example 백엔드
+             */
             name?: string;
         };
         SuccessResponseCategoryResponse: {
@@ -160,40 +429,106 @@ export interface components {
             message?: string;
             data?: components["schemas"]["CategoryResponse"];
         };
+        /** @description 토큰 재발급 요청 DTO */
         TokenReissue: {
+            /**
+             * @description 리프레시 토큰
+             * @example cc3dc914-646c-4fd1-8044-78d54e4b4e44
+             */
             refreshToken?: string;
         };
-        SuccessResponseToken: {
-            /** Format: int32 */
-            status?: number;
-            message?: string;
-            data?: components["schemas"]["Token"];
-        };
-        Token: {
-            accessToken?: string;
-            refreshToken?: string;
-        };
+        /** @description 로그아웃 요청 DTO */
         Logout: {
+            /**
+             * @description 리프레시 토큰
+             * @example cc3dc914-646c-4fd1-8044-78d54e4b4e44
+             */
             refreshToken?: string;
         };
-        SuccessResponseVoid: {
-            /** Format: int32 */
-            status?: number;
-            message?: string;
-            data?: Record<string, never>;
-        };
+        /** @description 소셜 로그인 요청 DTO */
         OAuthLogin: {
+            /**
+             * @description OAuth 공급자 (예: google, kakao, naver)
+             * @example kakao
+             */
             provider?: string;
+            /**
+             * @description SNS 서버에서 응답 받은 인가 코드
+             * @example O4WxKz1w9v4i9X3zkQXxHbR9x1d5aZbA12345678xyzABC
+             */
             authCode?: string;
         };
+        /** @description 회원 정보 수정 요청 DTO */
+        UpdateProfile: {
+            /**
+             * @description 닉네임 (2~20자, 특수문자 제외)
+             * @example readyUser
+             */
+            nickname: string;
+        };
+        /** @description 템플릿 수정 요청 DTO */
         TemplateUpdateRequest: {
+            /**
+             * @description 템플릿 제목
+             * @example 나만의 로그인 템플릿
+             */
             title: string;
+            /**
+             * @description 템플릿 설명
+             * @example JWT 기반 로그인 기능 포함
+             */
             description: string;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description 템플릿 가격 (포인트 단위)
+             * @example 300
+             */
             price?: number;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 카테고리 ID
+             * @example 1
+             */
             categoryId: number;
+            /**
+             * @description 대표 이미지 URL
+             * @example https://image.url/sample.png
+             */
             image: string;
+        };
+        /** @description 소셜 계정이 포함된 회원 프로필 정보 */
+        ProfileWithSocial: {
+            /**
+             * @description 회원 닉네임
+             * @example readyUser
+             */
+            nickname?: string;
+            /**
+             * @description 회원 전화번호
+             * @example 010-1234-5678
+             */
+            phoneNumber?: string;
+            /** @description 연동된 소셜 계정 목록 */
+            socials?: components["schemas"]["Social"][];
+        };
+        /** @description 소셜 계정 정보 */
+        Social: {
+            /**
+             * @description 소셜 제공자
+             * @example kakao
+             */
+            provider?: string;
+            /**
+             * @description 소셜 계정 이메일
+             * @example user@kakao.com
+             */
+            email?: string;
+        };
+        SuccessResponseProfileWithSocial: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["ProfileWithSocial"];
         };
         SuccessResponseTemplateScrollResponse: {
             /** Format: int32 */
@@ -201,19 +536,46 @@ export interface components {
             message?: string;
             data?: components["schemas"]["TemplateScrollResponse"];
         };
+        /** @description 커서 기반 템플릿 목록 응답 */
         TemplateScrollResponse: {
-            templates?: Array<components["schemas"]["TemplateSummary"]>;
-            /** Format: date-time */
+            /** @description 템플릿 요약 정보 리스트 */
+            templates?: components["schemas"]["TemplateSummary"][];
+            /**
+             * Format: date-time
+             * @description 다음 페이지 요청을 위한 커서
+             * @example 2024-12-09T15:30:00
+             */
             nextCursor?: string;
         };
+        /** @description 템플릿 요약 정보 (목록용) */
         TemplateSummary: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 템플릿 ID
+             * @example 17
+             */
             id?: number;
+            /**
+             * @description 템플릿 제목
+             * @example JWT 로그인 템플릿
+             */
             title?: string;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description 가격 (포인트 단위)
+             * @example 300
+             */
             price?: number;
+            /**
+             * @description 카테고리 이름
+             * @example 백엔드
+             */
             category?: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description 생성일시
+             * @example 2024-12-10T12:00:00
+             */
             createdAt?: string;
         };
         SuccessResponseTemplateDetailResponse: {
@@ -222,25 +584,105 @@ export interface components {
             message?: string;
             data?: components["schemas"]["TemplateDetailResponse"];
         };
+        /** @description 템플릿 상세 응답 DTO */
         TemplateDetailResponse: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 템플릿 ID
+             * @example 17
+             */
             templateId?: number;
+            /**
+             * @description 템플릿 제목
+             * @example JWT 로그인 템플릿
+             */
             title?: string;
+            /**
+             * @description 템플릿 설명
+             * @example JWT 기반 로그인/회원가입 구현
+             */
             description?: string;
+            /**
+             * @description 이미지 URL
+             * @example https://image.url/sample.png
+             */
             imageUrl?: string;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description 가격 (포인트)
+             * @example 300
+             */
             price?: number;
+            /**
+             * @description 카테고리 이름
+             * @example 백엔드
+             */
             category?: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description 생성일시
+             * @example 2024-12-10T12:00:00
+             */
             createdAt?: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description 수정일시
+             * @example 2024-12-11T13:00:00
+             */
             updatedAt?: string;
+            /**
+             * @description 사용자 구매 여부
+             * @example true
+             */
+            purchased?: boolean;
+        };
+        /** @description 구매한 템플릿 응답 DTO */
+        PurchasedTemplateResponse: {
+            /**
+             * Format: int64
+             * @description 템플릿 ID
+             * @example 1
+             */
+            id?: number;
+            /**
+             * @description 템플릿 제목
+             * @example JWT 로그인 템플릿
+             */
+            title?: string;
+            /**
+             * @description 템플릿 설명
+             * @example JWT를 이용한 로그인 기능 템플릿입니다.
+             */
+            description?: string;
+            /**
+             * Format: int32
+             * @description 템플릿 가격
+             * @example 100
+             */
+            price?: number;
+            /**
+             * @description 카테고리 이름
+             * @example 백엔드
+             */
+            category?: string;
+            /**
+             * Format: date-time
+             * @description 템플릿 생성일시
+             * @example 2025-08-03T13:44:00
+             */
+            createdAt?: string;
+        };
+        SuccessResponseListPurchasedTemplateResponse: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["PurchasedTemplateResponse"][];
         };
         SuccessResponseListCategoryResponse: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: Array<components["schemas"]["CategoryResponse"]>;
+            data?: components["schemas"]["CategoryResponse"][];
         };
         SuccessResponse: {
             /** Format: int32 */
@@ -257,6 +699,50 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    signup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Signup"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SuccessResponseToken"];
+                };
+            };
+        };
+    };
+    restoreProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SuccessResponseVoid"];
+                };
+            };
+        };
+    };
     getTemplates: {
         parameters: {
             query?: {
@@ -300,6 +786,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SuccessResponseTemplateResponse"];
+                };
+            };
+        };
+    };
+    purchaseTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                templateId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SuccessResponseVoid"];
                 };
             };
         };
@@ -420,13 +928,75 @@ export interface operations {
             };
         };
     };
+    getProfileWithSocialInfo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SuccessResponseProfileWithSocial"];
+                };
+            };
+        };
+    };
+    deleteProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SuccessResponseVoid"];
+                };
+            };
+        };
+    };
+    updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfile"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SuccessResponseVoid"];
+                };
+            };
+        };
+    };
     detailsTemplate: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                templatesId: number;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -442,7 +1012,7 @@ export interface operations {
             };
         };
     };
-    modifyTemplate: {
+    deleteTemplate: {
         parameters: {
             query?: never;
             header?: never;
@@ -464,7 +1034,7 @@ export interface operations {
             };
         };
     };
-    modifyTemplate_1: {
+    modifyTemplate: {
         parameters: {
             query?: never;
             header?: never;
@@ -534,6 +1104,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SuccessResponseCategoryResponse"];
+                };
+            };
+        };
+    };
+    getMyPurchases: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SuccessResponseListPurchasedTemplateResponse"];
                 };
             };
         };
