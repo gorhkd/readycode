@@ -1,8 +1,8 @@
+import { Link } from '@tanstack/react-router'
 import DrawerToggle from '@/components/common/navbar/DrawerToggle.tsx'
 import DrawerToggleButton from '@/components/common/navbar/DrawerToggleButton.tsx'
 import DrawerSidebar from '@/components/common/navbar/DrawerSidebar.tsx'
 import { navLinks } from '@/components/common/navbar/navLinks.ts'
-import { Link } from '@tanstack/react-router'
 import ThemeToggleButton from '@/components/common/navbar/ThemeToggleButton.tsx'
 
 export default function Navbar() {

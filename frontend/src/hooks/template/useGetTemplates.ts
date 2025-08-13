@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { getTemplates, type GetTemplatesQuery } from '@/api/templateApi.ts'
+import type {GetTemplatesQuery} from '@/api/templateApi.ts';
+import {  getTemplates } from '@/api/templateApi.ts'
 
 export default function useGetTemplates(params: GetTemplatesQuery) {
   return useQuery({

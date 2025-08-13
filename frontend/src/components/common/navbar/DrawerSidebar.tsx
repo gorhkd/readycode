@@ -1,5 +1,5 @@
-import { navLinks } from '@/components/common/navbar/navLinks.ts'
 import { Link } from '@tanstack/react-router'
+import { navLinks } from '@/components/common/navbar/navLinks.ts'
 
 export default function DrawerSidebar() {
   return (

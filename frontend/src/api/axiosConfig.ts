@@ -1,4 +1,5 @@
-import axios, { type AxiosError, type AxiosResponse } from 'axios'
+import axios from 'axios'
+import type {AxiosError, AxiosResponse} from 'axios';
 
 interface APIResponse<T = never> {
   status: number
@@ -50,7 +51,7 @@ axiosInstance.interceptors.response.use(
       if (isUnauthorized) {
         alert(error.response.data.message)
       }
-      return Promise.reject(error.response?.data)
+      return Promise.reject(error.response.data)
     } else {
       console.error('에러 내용: 알 수 없는 API 에러가 발생했습니다.')
       return Promise.reject(error)

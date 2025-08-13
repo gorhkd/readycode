@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import Card from '@/components/templates/Card.tsx'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { FadersHorizontalIcon } from '@phosphor-icons/react'
+import Card from '@/components/templates/Card.tsx'
 
 export const Route = createFileRoute('/')({
   component: Home,

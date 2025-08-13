@@ -1,6 +1,6 @@
+import { HeartIcon } from '@phosphor-icons/react'
 import ImageCarousel from '@/components/templates/ImageCarousel.tsx'
 import StarRating from '@/components/templates/StarRating.tsx'
-import { HeartIcon } from '@phosphor-icons/react'
 import { dummyText } from '@/components/common/dummyText.ts'
 import StarRatingCount from '@/components/templates/StarRatingCount.tsx'
 

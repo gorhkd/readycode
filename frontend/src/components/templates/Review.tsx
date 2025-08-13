@@ -1,6 +1,6 @@
+import { ThumbsDownIcon, ThumbsUpIcon } from '@phosphor-icons/react'
 import StarRating from '@/components/templates/StarRating.tsx'
 import ImagePlaceholder from '@/components/common/ImagePlaceholder.tsx'
-import { ThumbsDownIcon, ThumbsUpIcon } from '@phosphor-icons/react'
 import { dummyText } from '@/components/common/dummyText.ts'
 
 export default function Review() {

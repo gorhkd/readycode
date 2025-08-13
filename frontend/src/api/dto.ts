@@ -202,7 +202,7 @@ export interface components {
             data?: components["schemas"]["TemplateScrollResponse"];
         };
         TemplateScrollResponse: {
-            templates?: components["schemas"]["TemplateSummary"][];
+            templates?: Array<components["schemas"]["TemplateSummary"]>;
             /** Format: date-time */
             nextCursor?: string;
         };
@@ -240,7 +240,7 @@ export interface components {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["CategoryResponse"][];
+            data?: Array<components["schemas"]["CategoryResponse"]>;
         };
         SuccessResponse: {
             /** Format: int32 */
