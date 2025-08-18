@@ -53,6 +53,7 @@ public enum ErrorCode {
   FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "F004", "파일 크기가 허용치를 초과했습니다."),
   INVALID_FILENAME(HttpStatus.BAD_REQUEST, "F005", "파일 이름을 확인할 수 없습니다."),
   FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "F006", "파일 삭제에 실패했습니다."),
+  TEMPLATE_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "F007", "해당 파일이 존재하지 않습니다."),
 
   // 템플릿 다운로드 (TemplateDownload)
   DOWNLOAD_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "TD001", "다운로드 횟수를 초과했습니다."),
