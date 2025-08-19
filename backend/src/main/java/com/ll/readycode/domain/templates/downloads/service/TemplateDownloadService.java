@@ -9,14 +9,12 @@ import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.common.auth.oauth.properties.TemplateFileProperties;
+import com.ll.readycode.global.common.util.file.FilePathResolver;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
@@ -39,6 +37,7 @@ public class TemplateDownloadService {
   private final TemplateFileService templateFileService;
   private final TemplateDownloadRepository templateDownloadRepository;
   private final TemplateService templateService;
+  private final FilePathResolver filePathResolver;
   private final TemplateFileProperties properties;
 
   public ResponseEntity<Resource> downloadTemplate(
@@ -52,7 +51,7 @@ public class TemplateDownloadService {
       TemplateFile templateFile = templateFileService.findByTemplateId(templateId);
 
       // 파일 경로 보안 검증
-      Path filePath = validateAndResolvePath(templateFile.getUrl());
+      Path filePath = filePathResolver.resolveForRead(templateFile.getUrl());
       File file = filePath.toFile();
 
       // 파일 존재 및 접근 가능성 확인
@@ -88,35 +87,9 @@ public class TemplateDownloadService {
           .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
           .body(resource);
 
-    } catch (IOException e) {
-      throw new CustomException(ErrorCode.FILE_READ_ERROR);
     } catch (Exception e) {
       log.error("downloadTemplate 실패", e);
       throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-  /** 파일 경로의 보안성을 검증하고 안전한 Path 를 반환 */
-  private Path validateAndResolvePath(String fileUrl) throws IOException {
-    try {
-      // 설정에서 가져오거나 환경변수로 관리하는 것이 좋음
-      Path basePath = Paths.get(properties.getBaseDir()).normalize();
-      Path requestedPath = Paths.get(fileUrl).normalize();
-
-      // 절대 경로로 변환
-      Path resolvedPath = basePath.resolve(requestedPath).normalize();
-
-      // 기본 디렉토리를 벗어나는지 확인 (Directory Traversal 공격 방지)
-      if (!resolvedPath.startsWith(basePath)) {
-        log.warn("Directory traversal attempt detected. Requested path: {}", fileUrl);
-        throw new CustomException(ErrorCode.INVALID_FILE_PATH);
-      }
-
-      return resolvedPath;
-
-    } catch (InvalidPathException e) {
-      log.warn("Invalid file path requested: {}", fileUrl);
-      throw new CustomException(ErrorCode.INVALID_FILE_PATH);
     }
   }
 

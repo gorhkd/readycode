@@ -2,6 +2,7 @@ package com.ll.readycode.domain.templates;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
 
@@ -15,6 +16,7 @@ import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.common.auth.oauth.properties.TemplateFileProperties;
+import com.ll.readycode.global.common.util.file.FilePathResolver;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.io.IOException;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,6 +48,7 @@ class TemplateDownloadServiceTest {
   @Mock private TemplateFileService templateFileService;
   @Mock private TemplatePurchaseRepository templatePurchaseRepository;
   @Mock private TemplateDownloadRepository templateDownloadRepository;
+  @Mock private FilePathResolver filePathResolver;
   @Mock private TemplateService templateService;
   @Mock private TemplateFileProperties properties;
 
@@ -53,6 +57,7 @@ class TemplateDownloadServiceTest {
   private final String ip = "127.0.0.1";
   private final String device = "Chrome";
 
+  @TempDir Path tempDir;
   private Path tempFilePath;
 
   private TemplateFile createTemplateFile() {
@@ -64,8 +69,8 @@ class TemplateDownloadServiceTest {
 
   @BeforeEach
   void setup() throws IOException {
-    tempFilePath = Files.createTempFile("test", ".zip");
-    Files.writeString(tempFilePath, "sample content");
+    tempFilePath = tempDir.resolve("example.zip");
+    Files.write(tempFilePath, "dummy".getBytes());
 
     given(properties.getBaseDir()).willReturn(tempFilePath.getParent().toString() + "/");
     given(properties.getMaxSize()).willReturn(DataSize.ofMegabytes(10));
@@ -85,6 +90,8 @@ class TemplateDownloadServiceTest {
         .willReturn(true);
     given(templateFileService.findByTemplateId(1L)).willReturn(templateFile);
     given(templateService.findTemplateById(1L)).willReturn(template);
+    given(filePathResolver.resolveForRead(templateFile.getUrl())).willReturn(tempFilePath);
+    given(templateDownloadRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
 
     // when
     ResponseEntity<Resource> response = downloadService.downloadTemplate(1L, user, ip, device);
