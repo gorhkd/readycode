@@ -1,5 +1,7 @@
 package com.ll.readycode.domain.templates.templates.entity;
 
+import static com.ll.readycode.global.common.util.NumberFormatUtils.toScaledRating;
+
 import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.common.entity.BaseEntity;
@@ -58,18 +60,18 @@ public class Template extends BaseEntity {
 
   public void addReview(BigDecimal rating) {
     this.reviewCount++;
-    this.ratingSum += toScaled(rating);
+    this.ratingSum += toScaledRating(rating);
     recalcAvg();
   }
 
   public void updateReview(BigDecimal oldRating, BigDecimal newRating) {
-    this.ratingSum += (toScaled(newRating) - toScaled(oldRating));
+    this.ratingSum += (toScaledRating(newRating) - toScaledRating(oldRating));
     this.recalcAvg();
   }
 
   public void removeReview(BigDecimal rating) {
     this.reviewCount = Math.max(0, this.reviewCount - 1);
-    this.ratingSum = Math.max(0, this.ratingSum - toScaled(rating));
+    this.ratingSum = Math.max(0, this.ratingSum - toScaledRating(rating));
     this.recalcAvg();
   }
 
@@ -82,10 +84,5 @@ public class Template extends BaseEntity {
     // (ratingSum / 10.0) / reviewCount  → 소수 2자리 반올림
     BigDecimal sum = BigDecimal.valueOf(ratingSum).divide(BigDecimal.TEN);
     this.avgRating = sum.divide(BigDecimal.valueOf(reviewCount), 2, RoundingMode.HALF_UP);
-  }
-
-  // ★ 헬퍼: BigDecimal 별점을 ×10 정수로 (반올림 명시)
-  private static long toScaled(BigDecimal rating) {
-    return rating.multiply(BigDecimal.TEN).setScale(0, RoundingMode.HALF_UP).longValueExact();
   }
 }

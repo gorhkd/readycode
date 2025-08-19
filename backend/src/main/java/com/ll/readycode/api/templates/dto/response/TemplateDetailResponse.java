@@ -1,9 +1,9 @@
 package com.ll.readycode.api.templates.dto.response;
 
+import static com.ll.readycode.global.common.util.NumberFormatUtils.formatToOneDecimal;
+
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import lombok.Builder;
 
@@ -30,15 +30,10 @@ public record TemplateDetailResponse(
         .price(template.getPrice())
         .category(template.getCategory().getName())
         .reviewCount(template.getReviewCount())
-        .avgRating(format1(template.getAvgRating()))
+        .avgRating(formatToOneDecimal(template.getAvgRating()))
         .createdAt(template.getCreatedAt())
         .updatedAt(template.getUpdatedAt())
         .purchased(purchased)
         .build();
-  }
-
-  private static String format1(BigDecimal v) {
-    if (v == null) return "0.0";
-    return v.setScale(1, RoundingMode.DOWN).toPlainString();
   }
 }

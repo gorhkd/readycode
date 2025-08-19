@@ -1,9 +1,9 @@
 package com.ll.readycode.api.templates.dto.response;
 
+import static com.ll.readycode.global.common.util.NumberFormatUtils.formatToOneDecimal;
+
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 @Schema(description = "템플릿 요약 정보 (목록용)")
@@ -22,12 +22,7 @@ public record TemplateSummary(
         template.getPrice(),
         template.getCategory().getName(),
         template.getReviewCount(),
-        format1(template.getAvgRating()),
+        formatToOneDecimal(template.getAvgRating()),
         template.getCreatedAt());
-  }
-
-  private static String format1(BigDecimal v) {
-    if (v == null) return "0.0";
-    return v.setScale(1, RoundingMode.DOWN).toPlainString();
   }
 }
