@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum TemplateSortType {
-  LATEST("createAt"),
+  LATEST("createdAt"),
   RATING("rating"),
   POPULAR("popular");
 

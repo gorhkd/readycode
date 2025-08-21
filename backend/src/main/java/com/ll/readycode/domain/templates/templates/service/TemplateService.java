@@ -82,7 +82,9 @@ public class TemplateService {
     templateRepository.delete(template);
   }
 
-  public TemplateScrollResponse getTemplateList(LocalDateTime cursor, int limit) {
+  public TemplateScrollResponse getTemplateList(
+      String cursor, String sort, String order, Long categoryId, int limit) {
+
     List<Template> templates = templateRepository.findScrollTemplates(cursor, limit);
 
     LocalDateTime nextCursor =
