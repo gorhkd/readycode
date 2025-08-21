@@ -86,7 +86,7 @@ class ReviewServiceTest {
     ReviewCreateRequest req = new ReviewCreateRequest("굿", new BigDecimal("4.5"));
 
     given(templateService.findTemplateById(templateId)).willReturn(t);
-    willDoNothing().given(templatePurchaseService).validatePurchasedOrThrow(u.getId(), templateId);
+    willDoNothing().given(templatePurchaseService).throwIfNotPurchased(u.getId(), templateId);
     given(reviewReader.existsByUserAndTemplate(u.getId(), templateId)).willReturn(false);
 
     // save 시 아이디 채워서 반환
@@ -124,7 +124,7 @@ class ReviewServiceTest {
     ReviewCreateRequest req = new ReviewCreateRequest("굿", new BigDecimal("4.0"));
 
     given(templateService.findTemplateById(templateId)).willReturn(t);
-    willDoNothing().given(templatePurchaseService).validatePurchasedOrThrow(u.getId(), templateId);
+    willDoNothing().given(templatePurchaseService).throwIfNotPurchased(u.getId(), templateId);
     given(reviewReader.existsByUserAndTemplate(u.getId(), templateId)).willReturn(true);
 
     assertThatThrownBy(() -> reviewService.createReview(templateId, u, req))

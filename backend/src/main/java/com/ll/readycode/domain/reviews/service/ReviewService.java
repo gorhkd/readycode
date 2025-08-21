@@ -34,7 +34,7 @@ public class ReviewService {
   @Transactional
   public ReviewResponse createReview(Long templateId, UserProfile user, ReviewCreateRequest req) {
     Template template = templateService.findTemplateById(templateId);
-    templatePurchaseService.validatePurchasedOrThrow(user.getId(), templateId);
+    templatePurchaseService.throwIfNotPurchased(user.getId(), templateId);
 
     validateNotAlreadyReviewed(user.getId(), templateId);
 
