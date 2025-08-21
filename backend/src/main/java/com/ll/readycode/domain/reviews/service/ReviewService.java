@@ -13,6 +13,7 @@ import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseServi
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.global.common.pagination.PaginationPolicy;
 import com.ll.readycode.global.common.types.OrderType;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
@@ -57,7 +58,7 @@ public class ReviewService {
       Long templateId, String cursor, Integer limit, String sort, String order) {
     ReviewSortType reviewSortType = ReviewSortType.from(sort);
     OrderType orderType = OrderType.from(order);
-    int pageSize = (limit == null) ? 10 : Math.min(Math.max(limit, 1), 50);
+    int pageSize = PaginationPolicy.clamp(limit);
 
     List<Review> rows =
         reviewReader.findByTemplateWithCursor(

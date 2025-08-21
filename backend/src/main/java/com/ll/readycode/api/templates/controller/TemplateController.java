@@ -44,7 +44,7 @@ public class TemplateController {
       @RequestParam(defaultValue = "latest") String sort,
       @RequestParam(defaultValue = "desc") String order,
       @RequestParam(required = false) Long categoryId,
-      @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit) {
+      @RequestParam(defaultValue = "10") @Min(1) @Max(50) Integer limit) {
     TemplateScrollResponse response =
         templateService.getTemplateList(cursor, sort, order, categoryId, limit);
     return ResponseEntity.ok(SuccessResponse.of("템플릿 목록을 성공적으로 조회했습니다.", response));

@@ -1,5 +1,6 @@
 package com.ll.readycode.domain.templates.templates.service;
 
+
 import com.ll.readycode.api.templates.dto.request.TemplateCreateRequest;
 import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
@@ -8,13 +9,15 @@ import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.service.CategoryService;
 import com.ll.readycode.domain.templates.files.entity.TemplateFile;
 import com.ll.readycode.domain.templates.files.service.TemplateFileService;
+import com.ll.readycode.domain.templates.query.TemplateSortType;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.global.common.pagination.PaginationPolicy;
+import com.ll.readycode.global.common.types.OrderType;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -82,12 +85,23 @@ public class TemplateService {
     templateRepository.delete(template);
   }
 
+  @Transactional(readOnly = true)
   public TemplateScrollResponse getTemplateList(
-      String cursor, String sort, String order, Long categoryId, int limit) {
+      String cursor, String sort, String order, Long categoryId, Integer limit) {
+    TemplateSortType sortType = TemplateSortType.from(sort);
+    OrderType orderType = OrderType.from(order);
 
-    List<Template> templates = templateRepository.findScrollTemplates(cursor, limit);
+    if (categoryId != null) {
+      categoryService.assertCategoryExists(categoryId);
+    }
 
-    LocalDateTime nextCursor =
+    int pageSize = PaginationPolicy.clamp(limit);
+
+    List<Template> templates =
+        templateRepository.findScrollTemplates(cursor, sortType, orderType, categoryId, pageSize);
+
+    // TODO: nextCursor 수정 => createdAt|id
+    String nextCursor =
         templates.isEmpty() ? null : templates.get(templates.size() - 1).getCreatedAt();
 
     List<TemplateSummary> result = templates.stream().map(TemplateSummary::from).toList();
