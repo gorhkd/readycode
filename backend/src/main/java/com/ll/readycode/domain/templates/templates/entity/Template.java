@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -47,14 +48,21 @@ public class Template extends BaseEntity {
       fetch = FetchType.LAZY)
   private TemplateFile templateFile;
 
+  @Builder.Default
   @Column(nullable = false)
   private long reviewCount = 0L;
 
+  @Builder.Default
   @Column(nullable = false)
   private long ratingSum = 0L; // 별점×10 누적합
 
+  @Builder.Default
   @Column(nullable = false, precision = 3, scale = 2)
   private BigDecimal avgRating = new BigDecimal("0.00"); // 표시/정렬용 0.00~5.00
+
+  @Builder.Default
+  @Column(name = "purchase_count", nullable = false)
+  private Long purchaseCount = 0L;
 
   @Version private Long version;
 
@@ -97,5 +105,9 @@ public class Template extends BaseEntity {
     // (ratingSum / 10.0) / reviewCount  → 소수 2자리 반올림
     BigDecimal sum = BigDecimal.valueOf(ratingSum).divide(BigDecimal.TEN);
     this.avgRating = sum.divide(BigDecimal.valueOf(reviewCount), 2, RoundingMode.HALF_UP);
+  }
+
+  public void incrementPurchaseCount() {
+    this.purchaseCount++;
   }
 }

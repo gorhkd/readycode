@@ -1,6 +1,5 @@
 package com.ll.readycode.domain.templates.templates.service;
 
-
 import com.ll.readycode.api.templates.dto.request.TemplateCreateRequest;
 import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
@@ -101,8 +100,7 @@ public class TemplateService {
         templateRepository.findScrollTemplates(cursor, sortType, orderType, categoryId, pageSize);
 
     // TODO: nextCursor 수정 => createdAt|id
-    String nextCursor =
-        templates.isEmpty() ? null : templates.get(templates.size() - 1).getCreatedAt();
+    String nextCursor = "";
 
     List<TemplateSummary> result = templates.stream().map(TemplateSummary::from).toList();
 
