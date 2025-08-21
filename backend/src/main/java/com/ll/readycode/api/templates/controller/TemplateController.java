@@ -35,7 +35,7 @@ public class TemplateController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = "10") int limit) {
-    TemplateScrollResponse response = templateService.getTemplates(cursor, limit);
+    TemplateScrollResponse response = templateService.getTemplateList(cursor, limit);
     return ResponseEntity.ok(SuccessResponse.of("템플릿 목록을 성공적으로 조회했습니다.", response));
   }
 
@@ -70,16 +70,20 @@ public class TemplateController {
   @Operation(summary = "템플릿 수정", description = "템플릿 ID를 기준으로 수정합니다.")
   @PatchMapping("/{templatesId}")
   public ResponseEntity<SuccessResponse<TemplateResponse>> modifyTemplate(
-      @Valid @RequestBody TemplateUpdateRequest request, @PathVariable Long templatesId) {
-    Template template = templateService.update(templatesId, request);
+      @Valid @RequestBody TemplateUpdateRequest request,
+      @PathVariable Long templatesId,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    Template template =
+        templateService.update(templatesId, request, userPrincipal.getUserProfile().getId());
     return ResponseEntity.ok(
         SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
   }
 
   @Operation(summary = "템플릿 삭제", description = "템플릿 ID를 기준으로 삭제합니다.")
   @DeleteMapping("/{templatesId}")
-  public ResponseEntity<SuccessResponse> deleteTemplate(@PathVariable Long templatesId) {
-    templateService.delete(templatesId);
+  public ResponseEntity<SuccessResponse> deleteTemplate(
+      @PathVariable Long templatesId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    templateService.delete(templatesId, userPrincipal.getUserProfile().getId());
     return ResponseEntity.ok(SuccessResponse.of("게시물이 성공적으로 삭제되었습니다.", null));
   }
 }
