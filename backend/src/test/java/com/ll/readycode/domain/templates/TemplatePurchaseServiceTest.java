@@ -8,6 +8,8 @@ import static org.mockito.BDDMockito.given;
 
 import com.ll.readycode.api.templates.dto.response.PurchasedTemplateResponse;
 import com.ll.readycode.domain.categories.entity.Category;
+import com.ll.readycode.domain.reviews.reader.ReviewReader;
+
 import com.ll.readycode.domain.templates.purchases.entity.TemplatePurchase;
 import com.ll.readycode.domain.templates.purchases.repository.TemplatePurchaseRepository;
 import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
@@ -35,6 +37,8 @@ class TemplatePurchaseServiceTest {
   @Mock private TemplatePurchaseRepository templatePurchaseRepository;
 
   @Mock private TemplateService templateService;
+
+  @Mock private ReviewReader reviewReader;
 
   private final Long userId = 1L;
   private final Long templateId = 10L;

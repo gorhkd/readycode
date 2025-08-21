@@ -41,7 +41,7 @@ public class TemplateController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = "10") int limit) {
-    TemplateScrollResponse response = templateService.getTemplates(cursor, limit);
+    TemplateScrollResponse response = templateService.getTemplateList(cursor, limit);
     return ResponseEntity.ok(SuccessResponse.of("템플릿 목록을 성공적으로 조회했습니다.", response));
   }
 

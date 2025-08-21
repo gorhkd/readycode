@@ -61,6 +61,7 @@ class TemplateServiceTest {
         .description("Old")
         .price(100)
         .image("old.png")
+        .seller(userProfile)
         .category(category)
         .createdAt(createdAt)
         .seller(userProfile)
@@ -147,7 +148,7 @@ class TemplateServiceTest {
     given(templateRepository.findScrollTemplates(null, 10)).willReturn(templates);
 
     // when
-    TemplateScrollResponse response = templateService.getTemplates(null, 10);
+    TemplateScrollResponse response = templateService.getTemplateList(null, 10);
 
     // then
     assertThat(response.templates()).hasSize(2);
@@ -168,7 +169,7 @@ class TemplateServiceTest {
     given(templateRepository.findScrollTemplates(cursor, 10)).willReturn(templates);
 
     // when
-    TemplateScrollResponse response = templateService.getTemplates(cursor, 10);
+    TemplateScrollResponse response = templateService.getTemplateList(cursor, 10);
 
     // then
     assertThat(response.templates()).hasSize(2);
@@ -182,7 +183,7 @@ class TemplateServiceTest {
     given(templateRepository.findScrollTemplates(null, 10)).willReturn(List.of());
 
     // when
-    TemplateScrollResponse response = templateService.getTemplates(null, 10);
+    TemplateScrollResponse response = templateService.getTemplateList(null, 10);
 
     // then
     assertThat(response.templates()).isEmpty();

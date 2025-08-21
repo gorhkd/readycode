@@ -78,10 +78,11 @@ public class TemplateService {
 
     validateTemplateOwner(template, userProfile.getId());
     templateFileService.deleteFile(template.getTemplateFile());
+
     templateRepository.delete(template);
   }
 
-  public TemplateScrollResponse getTemplates(LocalDateTime cursor, int limit) {
+  public TemplateScrollResponse getTemplateList(LocalDateTime cursor, int limit) {
     List<Template> templates = templateRepository.findScrollTemplates(cursor, limit);
 
     LocalDateTime nextCursor =
