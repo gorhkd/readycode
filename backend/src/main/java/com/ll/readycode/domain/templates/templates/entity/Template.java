@@ -3,6 +3,7 @@ package com.ll.readycode.domain.templates.templates.entity;
 import static com.ll.readycode.global.common.util.NumberFormatUtils.toScaledRating;
 
 import com.ll.readycode.domain.categories.entity.Category;
+import com.ll.readycode.domain.templates.files.entity.TemplateFile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -39,6 +40,13 @@ public class Template extends BaseEntity {
   @JoinColumn(name = "seller_id", nullable = false)
   private UserProfile seller;
 
+  @OneToOne(
+      mappedBy = "template",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
+  private TemplateFile templateFile;
+
   @Column(nullable = false)
   private long reviewCount = 0L;
 
@@ -56,6 +64,11 @@ public class Template extends BaseEntity {
     this.price = price;
     this.image = image;
     this.category = category;
+  }
+
+  public void setTemplateFile(TemplateFile templateFile) {
+    this.templateFile = templateFile;
+    templateFile.setTemplate(this);
   }
 
   public void addReview(BigDecimal rating) {
