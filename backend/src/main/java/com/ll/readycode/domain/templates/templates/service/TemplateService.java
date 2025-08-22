@@ -146,6 +146,11 @@ public class TemplateService {
         .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
   }
 
+  @Transactional
+  public void incrementPurchaseCount(Long templateId) {
+    templateRepository.incrementPurchaseCount(templateId);
+  }
+
   private void validateTemplateOwner(Template template, Long userId) {
     if (!template.getSeller().getId().equals(userId)) {
       throw new CustomException(ErrorCode.TEMPLATE_ACCESS_DENIED);
