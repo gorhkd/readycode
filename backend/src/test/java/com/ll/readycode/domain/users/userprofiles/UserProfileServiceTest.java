@@ -71,7 +71,9 @@ public class UserProfileServiceTest {
     TempUserPrincipal tempUserPrincipal =
         TempUserPrincipal.builder().provider(provider).providerId(providerId).email(email).build();
 
-    Signup signupRequest = new Signup(nickname, phoneNumber, purpose, role);
+
+    Signup signupRequest = new Signup(nickname, phoneNumber, purpose, UserRole.USER);
+
     ReflectionTestUtils.setField(userProfile, "id", 1L);
 
     when(userProfileRepository.save(any(UserProfile.class))).thenReturn(userProfile);
@@ -278,7 +280,8 @@ public class UserProfileServiceTest {
     UserPrincipal userPrincipal = new UserPrincipal(userProfile);
 
     // when
-    CustomException exception = assertThrows(CustomException.class, () -> userProfileService.restore(userPrincipal));
+    CustomException exception =
+        assertThrows(CustomException.class, () -> userProfileService.restore(userPrincipal));
 
     // then
     assertThat(ALREADY_ACTIVE_USER).isEqualTo(exception.getErrorCode());
