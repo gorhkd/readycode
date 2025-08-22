@@ -140,6 +140,13 @@ public class TemplateService {
   }
 
   @Transactional(readOnly = true)
+  public Template findTemplateWithCategoryById(Long templateId) {
+    return templateRepository
+        .findByIdWithCategory(templateId)
+        .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
+  }
+
+  @Transactional(readOnly = true)
   public Template findTemplateById(Long templatesId) {
     return templateRepository
         .findById(templatesId)

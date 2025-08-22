@@ -51,10 +51,10 @@ public class TemplateController {
   }
 
   @Operation(summary = "템플릿 상세 조회", description = "템플릿 ID를 기준으로 상세 정보를 조회합니다.")
-  @GetMapping("/{templatesId}")
+  @GetMapping("/{templateId}")
   public ResponseEntity<SuccessResponse<TemplateDetailResponse>> detailsTemplate(
       @PathVariable Long templateId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
-    Template template = templateService.findTemplateById(templateId);
+    Template template = templateService.findTemplateWithCategoryById(templateId);
 
     boolean purchased = false;
     if (userPrincipal != null) {
@@ -71,7 +71,7 @@ public class TemplateController {
   @Operation(summary = "템플릿 생성", description = "템플릿을 생성합니다.")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<SuccessResponse<TemplateResponse>> createTemplate(
-      @RequestPart("template") @Valid TemplateCreateRequest request,
+      @RequestPart("request") @Valid TemplateCreateRequest request,
       @RequestPart("file") MultipartFile file,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
     Template template = templateService.create(request, file, userPrincipal.getUserProfile());
@@ -100,6 +100,7 @@ public class TemplateController {
     return ResponseEntity.ok(SuccessResponse.of("게시물이 성공적으로 삭제되었습니다.", null));
   }
 
+  @Operation(summary = "템플릿 다운로드", description = "해당 템플릿을 다운로드합니다.")
   @GetMapping("/{templateId}/download")
   public ResponseEntity<Resource> downloadTemplate(
       @PathVariable Long templateId,
