@@ -8,13 +8,17 @@ import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.service.CategoryService;
 import com.ll.readycode.domain.templates.files.entity.TemplateFile;
 import com.ll.readycode.domain.templates.files.service.TemplateFileService;
+import com.ll.readycode.domain.templates.query.TemplateSortType;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.global.common.pagination.PaginationPolicy;
+import com.ll.readycode.global.common.types.OrderType;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,9 @@ public class TemplateService {
   private final TemplateRepository templateRepository;
   private final TemplateFileService templateFileService;
   private final CategoryService categoryService;
+
+  private static final DateTimeFormatter CURSOR_FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+  private static final String DELIM = "|";
 
   @Transactional
   public Template create(
@@ -82,15 +89,61 @@ public class TemplateService {
     templateRepository.delete(template);
   }
 
-  public TemplateScrollResponse getTemplateList(LocalDateTime cursor, int limit) {
-    List<Template> templates = templateRepository.findScrollTemplates(cursor, limit);
+  @Transactional(readOnly = true)
+  public TemplateScrollResponse getTemplateList(
+      String cursor, String sort, String order, Long categoryId, Integer limit) {
+    TemplateSortType sortType = TemplateSortType.from(sort);
+    OrderType orderType = OrderType.from(order);
 
-    LocalDateTime nextCursor =
-        templates.isEmpty() ? null : templates.get(templates.size() - 1).getCreatedAt();
+    if (categoryId != null) {
+      categoryService.assertCategoryExists(categoryId);
+    }
+
+    int pageSize = PaginationPolicy.clamp(limit);
+    int fetchSize = pageSize + 1;
+
+    List<Template> templates =
+        templateRepository.findScrollTemplates(cursor, sortType, orderType, categoryId, fetchSize);
+
+    boolean hasNext = templates.size() > pageSize;
+    if (hasNext) {
+      templates = templates.subList(0, pageSize);
+    }
+
+    String nextCursor = null;
+    if (hasNext && !templates.isEmpty()) {
+      Template last = templates.get(templates.size() - 1);
+      nextCursor = encodeCursor(last, sortType);
+    }
 
     List<TemplateSummary> result = templates.stream().map(TemplateSummary::from).toList();
 
     return new TemplateScrollResponse(result, nextCursor);
+  }
+
+  private String encodeCursor(Template t, TemplateSortType sortType) {
+    String ts = t.getCreatedAt().format(CURSOR_FMT);
+    Long id = t.getId();
+
+    return switch (sortType) {
+      case LATEST -> ts + DELIM + id;
+      case RATING -> {
+        BigDecimal rating = t.getAvgRating() == null ? BigDecimal.ZERO : t.getAvgRating();
+        String r = rating.stripTrailingZeros().toPlainString();
+        yield r + DELIM + ts + DELIM + id;
+      }
+      case POPULAR -> {
+        long cnt = (t.getPurchaseCount() == null) ? 0L : t.getPurchaseCount();
+        yield cnt + DELIM + ts + DELIM + id;
+      }
+    };
+  }
+
+  @Transactional(readOnly = true)
+  public Template findTemplateWithCategoryById(Long templateId) {
+    return templateRepository
+        .findByIdWithCategory(templateId)
+        .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
   }
 
   @Transactional(readOnly = true)
@@ -98,6 +151,11 @@ public class TemplateService {
     return templateRepository
         .findById(templatesId)
         .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
+  }
+
+  @Transactional
+  public void incrementPurchaseCount(Long templateId) {
+    templateRepository.incrementPurchaseCount(templateId);
   }
 
   private void validateTemplateOwner(Template template, Long userId) {

@@ -50,8 +50,8 @@ public class ReviewController {
       @PathVariable Long templateId,
       @RequestParam(required = false) String cursor,
       @RequestParam(defaultValue = "10") @Min(1) @Max(50) int limit,
-      @RequestParam(defaultValue = "LATEST") String sort,
-      @RequestParam(defaultValue = "DESC") String order) {
+      @RequestParam(defaultValue = "latest") String sort,
+      @RequestParam(defaultValue = "desc") String order) {
     CursorPage<ReviewSummaryResponse> list =
         reviewService.getReviewList(templateId, cursor, limit, sort, order);
     return ResponseEntity.ok(SuccessResponse.of(list));

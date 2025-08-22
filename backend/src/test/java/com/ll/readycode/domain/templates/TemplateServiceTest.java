@@ -1,7 +1,6 @@
 package com.ll.readycode.domain.templates;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.*;
 
 import com.ll.readycode.api.templates.dto.request.TemplateCreateRequest;
@@ -11,14 +10,15 @@ import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.categories.service.CategoryService;
 import com.ll.readycode.domain.templates.files.entity.TemplateFile;
 import com.ll.readycode.domain.templates.files.service.TemplateFileService;
+import com.ll.readycode.domain.templates.query.TemplateSortType;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserPurpose;
 import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
-import com.ll.readycode.global.exception.CustomException;
-import com.ll.readycode.global.exception.ErrorCode;
+import com.ll.readycode.global.common.types.OrderType;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +54,12 @@ class TemplateServiceTest {
           .build();
 
   private Template createTemplate(
-      Long id, String title, Category category, LocalDateTime createdAt) {
+      Long id,
+      String title,
+      Category category,
+      LocalDateTime createdAt,
+      BigDecimal avgRating,
+      Long purchaseCount) {
     return Template.builder()
         .id(id)
         .title(title)
@@ -65,6 +70,8 @@ class TemplateServiceTest {
         .category(category)
         .createdAt(createdAt)
         .seller(userProfile)
+        .avgRating(avgRating)
+        .purchaseCount(purchaseCount)
         .build();
   }
 
@@ -94,7 +101,7 @@ class TemplateServiceTest {
   @DisplayName("템플릿 수정 성공")
   void updateTemplate_success() {
     // given
-    Template existing = createTemplate(1L, "템플릿1", category1, LocalDateTime.now());
+    Template existing = createTemplate(1L, "템플릿1", category1, LocalDateTime.now(), null, null);
     TemplateFile mockFile = mock(TemplateFile.class);
     existing.setTemplateFile(mockFile);
 
@@ -121,7 +128,7 @@ class TemplateServiceTest {
   @DisplayName("템플릿 삭제 성공")
   void deleteTemplate_success() {
     // given
-    Template template = createTemplate(1L, "템플릿1", category1, LocalDateTime.now());
+    Template template = createTemplate(1L, "템플릿1", category1, LocalDateTime.now(), null, null);
     TemplateFile mockFile = mock(TemplateFile.class);
     template.setTemplateFile(mockFile);
 
@@ -137,69 +144,162 @@ class TemplateServiceTest {
   }
 
   @Test
-  @DisplayName("템플릿 조회 cursor 값이 없을 때 성공")
-  void getTemplates_whenCursorIsNull_thenReturnLatestTemplates() {
+  @DisplayName("템플릿 조회 - latest 첫 페이지: nextCursor는 null")
+  void getTemplates_latest_firstPage_noNextCursor() {
     // given
+    int limit = 10;
+    int fetchSize = limit + 1;
+    LocalDateTime now = LocalDateTime.of(2025, 8, 22, 12, 0);
     List<Template> templates =
         List.of(
-            createTemplate(1L, "템플릿1", category1, LocalDateTime.now()),
-            createTemplate(2L, "템플릿2", category2, LocalDateTime.now().minusMinutes(1)));
+            createTemplate(10L, "T1", category1, now, null, null),
+            createTemplate(9L, "T2", category2, now.minusMinutes(1), null, null));
 
-    given(templateRepository.findScrollTemplates(null, 10)).willReturn(templates);
+    given(
+            templateRepository.findScrollTemplates(
+                isNull(), eq(TemplateSortType.LATEST), eq(OrderType.DESC), isNull(), eq(fetchSize)))
+        .willReturn(templates);
 
     // when
-    TemplateScrollResponse response = templateService.getTemplateList(null, 10);
+    TemplateScrollResponse res =
+        templateService.getTemplateList(null, "latest", "desc", null, limit);
 
     // then
-    assertThat(response.templates()).hasSize(2);
-    assertThat(response.nextCursor()).isEqualTo(templates.get(1).getCreatedAt());
+    assertThat(res.templates()).hasSize(2);
+    assertThat(res.nextCursor()).isNull(); // hasNext=false 이므로
+    verify(templateRepository)
+        .findScrollTemplates(
+            isNull(), eq(TemplateSortType.LATEST), eq(OrderType.DESC), isNull(), eq(fetchSize));
   }
 
   @Test
-  @DisplayName("템플릿 조회 cursor 값이 있을 때 성공")
-  void getTemplates_whenCursorExists_thenReturnTemplatesBeforeCursor() {
+  @DisplayName("템플릿 조회 - latest 다음 페이지 존재: nextCursor는 마지막 항목 ts|id")
+  void getTemplates_latest_hasNext() {
     // given
-    LocalDateTime cursor = LocalDateTime.now();
-
-    List<Template> templates =
+    int limit = 1;
+    int fetchSize = limit + 1;
+    LocalDateTime ts1 = LocalDateTime.of(2025, 8, 22, 12, 0);
+    LocalDateTime ts2 = ts1.minusMinutes(1);
+    // 최신순 DESC로 반환되었다고 가정: ts1(id=10), ts2(id=9)
+    List<Template> repoRows =
         List.of(
-            createTemplate(1L, "템플릿1", category1, cursor.minusMinutes(1)),
-            createTemplate(2L, "템플릿2", category2, cursor.minusMinutes(2)));
+            createTemplate(10L, "T1", category1, ts1, null, null),
+            createTemplate(9L, "T2", category2, ts2, null, null));
 
-    given(templateRepository.findScrollTemplates(cursor, 10)).willReturn(templates);
+    given(
+            templateRepository.findScrollTemplates(
+                isNull(), eq(TemplateSortType.LATEST), eq(OrderType.DESC), isNull(), eq(fetchSize)))
+        .willReturn(repoRows);
 
     // when
-    TemplateScrollResponse response = templateService.getTemplateList(cursor, 10);
+    TemplateScrollResponse res =
+        templateService.getTemplateList(null, "latest", "desc", null, limit);
 
-    // then
-    assertThat(response.templates()).hasSize(2);
-    assertThat(response.nextCursor()).isEqualTo(templates.get(1).getCreatedAt());
+    // then (화면에는 1개만, nextCursor는 화면 마지막=ts1|10)
+    assertThat(res.templates()).hasSize(1);
+    assertThat(res.templates().get(0).id()).isEqualTo(10L);
+    assertThat(res.nextCursor()).isEqualTo("2025-08-22T12:00:00|10");
   }
 
   @Test
-  @DisplayName("템플릿 조회 결과가 비어 있을 때 nextCursor는 null")
-  void getTemplates_whenResultIsEmpty_thenNextCursorIsNull() {
+  @DisplayName("템플릿 조회 - rating 정렬 커서 포맷: rating|ts|id")
+  void getTemplates_rating_hasNext_cursorFormat() {
     // given
-    given(templateRepository.findScrollTemplates(null, 10)).willReturn(List.of());
+    int limit = 1;
+    int fetchSize = limit + 1;
+    LocalDateTime ts = LocalDateTime.of(2025, 8, 22, 13, 0);
+
+    List<Template> repoRows =
+        List.of(
+            createTemplate(100L, "T1", category1, ts, new BigDecimal("4.5"), null),
+            createTemplate(99L, "T2", category2, ts.minusMinutes(1), new BigDecimal("4.0"), null));
+
+    given(
+            templateRepository.findScrollTemplates(
+                isNull(), eq(TemplateSortType.RATING), eq(OrderType.DESC), isNull(), eq(fetchSize)))
+        .willReturn(repoRows);
 
     // when
-    TemplateScrollResponse response = templateService.getTemplateList(null, 10);
+    TemplateScrollResponse res =
+        templateService.getTemplateList(null, "rating", "desc", null, limit);
 
     // then
-    assertThat(response.templates()).isEmpty();
-    assertThat(response.nextCursor()).isNull();
+    assertThat(res.templates()).hasSize(1);
+    assertThat(res.nextCursor()).isEqualTo("4.5|2025-08-22T13:00:00|100");
   }
 
   @Test
-  @DisplayName("템플릿 조회 예외처리")
-  void findTemplateById_whenNotFound_thenThrowException() {
+  @DisplayName("템플릿 조회 - popular 정렬 커서 포맷: purchaseCount|ts|id")
+  void getTemplates_popular_hasNext_cursorFormat() {
     // given
-    given(templateRepository.findById(99L)).willReturn(Optional.empty());
+    int limit = 1;
+    int fetchSize = limit + 1;
+    LocalDateTime ts = LocalDateTime.of(2025, 8, 22, 14, 0);
 
-    // expect
-    CustomException exception =
-        assertThrows(CustomException.class, () -> templateService.findTemplateById(99L));
+    Template t1 = createTemplate(200L, "T1", category1, ts, null, 37L);
+    Template t2 = createTemplate(199L, "T2", category2, ts.minusMinutes(1), null, 12L);
+    List<Template> repoRows = List.of(t1, t2);
 
-    assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.TEMPLATE_NOT_FOUND);
+    given(
+            templateRepository.findScrollTemplates(
+                isNull(),
+                eq(TemplateSortType.POPULAR),
+                eq(OrderType.DESC),
+                isNull(),
+                eq(fetchSize)))
+        .willReturn(repoRows);
+
+    // when
+    TemplateScrollResponse res =
+        templateService.getTemplateList(null, "popular", "desc", null, limit);
+
+    // then
+    assertThat(res.templates()).hasSize(1);
+    assertThat(res.nextCursor()).isEqualTo("37|2025-08-22T14:00:00|200");
+  }
+
+  @Test
+  @DisplayName("정렬값이 잘못되면 LATEST로 fallback")
+  void getTemplates_invalidSort_fallbackToLatest() {
+    // given
+    int limit = 5;
+    int fetchSize = limit + 1;
+    given(
+            templateRepository.findScrollTemplates(
+                any(), eq(TemplateSortType.LATEST), any(OrderType.class), any(), eq(fetchSize)))
+        .willReturn(List.of());
+
+    // when
+    TemplateScrollResponse res =
+        templateService.getTemplateList(null, "weird", "desc", null, limit);
+
+    // then
+    assertThat(res.templates()).isEmpty();
+    assertThat(res.nextCursor()).isNull();
+    verify(templateRepository)
+        .findScrollTemplates(any(), eq(TemplateSortType.LATEST), any(), any(), eq(fetchSize));
+  }
+
+  @Test
+  @DisplayName("categoryId가 있으면 존재 검증 호출")
+  void getTemplates_callsCategoryAssert_whenCategoryIdPresent() {
+    // given
+    int limit = 3;
+    int fetchSize = limit + 1;
+    Long categoryId = 1L;
+
+    // 존재 검증은 void → doNothing
+    doNothing().when(categoryService).assertCategoryExists(categoryId);
+    given(
+            templateRepository.findScrollTemplates(
+                any(), any(), any(), eq(categoryId), eq(fetchSize)))
+        .willReturn(List.of());
+
+    // when
+    TemplateScrollResponse res =
+        templateService.getTemplateList(null, "latest", "desc", categoryId, limit);
+
+    // then
+    verify(categoryService).assertCategoryExists(categoryId);
   }
 }

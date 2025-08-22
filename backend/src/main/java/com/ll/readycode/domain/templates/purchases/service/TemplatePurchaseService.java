@@ -46,6 +46,8 @@ public class TemplatePurchaseService {
 
     try {
       templatePurchaseRepository.save(templatePurchase);
+      templatePurchaseRepository.flush();
+      templateService.incrementPurchaseCount(templateId);
     } catch (DataIntegrityViolationException e) {
       throw new CustomException(ErrorCode.ALREADY_PURCHASED);
     }

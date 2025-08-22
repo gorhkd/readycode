@@ -1,4 +1,4 @@
-package com.ll.readycode.domain.reviews.enums;
+package com.ll.readycode.global.common.types;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -10,8 +10,7 @@ import com.ll.readycode.api.reviews.dto.response.CursorPage;
 import com.ll.readycode.api.reviews.dto.response.ReviewResponse;
 import com.ll.readycode.api.reviews.dto.response.ReviewSummaryResponse;
 import com.ll.readycode.domain.reviews.entity.Review;
-import com.ll.readycode.domain.reviews.enums.OrderType;
-import com.ll.readycode.domain.reviews.enums.SortType;
+import com.ll.readycode.domain.reviews.query.ReviewSortType;
 import com.ll.readycode.domain.reviews.reader.ReviewReader;
 import com.ll.readycode.domain.reviews.repository.ReviewRepository;
 import com.ll.readycode.domain.reviews.service.ReviewService;
@@ -21,6 +20,7 @@ import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserPurpose;
 import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
+import com.ll.readycode.global.common.types.OrderType;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.math.BigDecimal;
@@ -86,7 +86,7 @@ class ReviewServiceTest {
     ReviewCreateRequest req = new ReviewCreateRequest("굿", new BigDecimal("4.5"));
 
     given(templateService.findTemplateById(templateId)).willReturn(t);
-    willDoNothing().given(templatePurchaseService).validatePurchasedOrThrow(u.getId(), templateId);
+    willDoNothing().given(templatePurchaseService).throwIfNotPurchased(u.getId(), templateId);
     given(reviewReader.existsByUserAndTemplate(u.getId(), templateId)).willReturn(false);
 
     // save 시 아이디 채워서 반환
@@ -124,7 +124,7 @@ class ReviewServiceTest {
     ReviewCreateRequest req = new ReviewCreateRequest("굿", new BigDecimal("4.0"));
 
     given(templateService.findTemplateById(templateId)).willReturn(t);
-    willDoNothing().given(templatePurchaseService).validatePurchasedOrThrow(u.getId(), templateId);
+    willDoNothing().given(templatePurchaseService).throwIfNotPurchased(u.getId(), templateId);
     given(reviewReader.existsByUserAndTemplate(u.getId(), templateId)).willReturn(true);
 
     assertThatThrownBy(() -> reviewService.createReview(templateId, u, req))
@@ -198,7 +198,7 @@ class ReviewServiceTest {
   @DisplayName("리뷰 목록 조회: hasNext 계산 및 커서 인코딩(RATING 정렬)")
   void getReviewList_withCursor_rating() {
     long templateId = 10L;
-    SortType sortType = SortType.RATING;
+    ReviewSortType reviewSortType = ReviewSortType.RATING;
     OrderType orderType = OrderType.DESC;
     int pageSize = 2;
 
@@ -212,7 +212,7 @@ class ReviewServiceTest {
 
     given(
             reviewReader.findByTemplateWithCursor(
-                eq(templateId), isNull(), eq(pageSize + 1), eq(sortType), eq(orderType)))
+                eq(templateId), isNull(), eq(pageSize + 1), eq(reviewSortType), eq(orderType)))
         .willReturn(List.of(r1, r2, r3));
 
     CursorPage<ReviewSummaryResponse> page =
@@ -240,7 +240,7 @@ class ReviewServiceTest {
                 eq(templateId),
                 isNull(),
                 eq(pageSize + 1),
-                eq(SortType.RATING),
+                eq(ReviewSortType.RATING),
                 eq(OrderType.DESC)))
         .willReturn(List.of(r1, r2)); // 초과분 없음
 

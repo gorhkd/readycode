@@ -2,9 +2,9 @@ package com.ll.readycode.domain.reviews.repository;
 
 import com.ll.readycode.domain.reviews.entity.QReview;
 import com.ll.readycode.domain.reviews.entity.Review;
-import com.ll.readycode.domain.reviews.enums.OrderType;
-import com.ll.readycode.domain.reviews.enums.SortType;
+import com.ll.readycode.domain.reviews.query.ReviewSortType;
 import com.ll.readycode.domain.users.userprofiles.entity.QUserProfile;
+import com.ll.readycode.global.common.types.OrderType;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -38,7 +38,11 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
   @Override
   public List<Review> findByTemplateWithCursor(
-      Long templateId, String cursor, int limit, SortType sortType, OrderType orderType) {
+      Long templateId,
+      String cursor,
+      int limit,
+      ReviewSortType reviewSortType,
+      OrderType orderType) {
     QReview r = QReview.review;
     QUserProfile u = QUserProfile.userProfile;
 
@@ -46,14 +50,14 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
         .selectFrom(r)
         .join(r.userProfile, u)
         .fetchJoin()
-        .where(r.template.id.eq(templateId), cursorPredicate(r, cursor, sortType, orderType))
-        .orderBy(orderSpecifiers(r, sortType, orderType))
+        .where(r.template.id.eq(templateId), cursorPredicate(r, cursor, reviewSortType, orderType))
+        .orderBy(orderSpecifiers(r, reviewSortType, orderType))
         .limit(limit)
         .fetch();
   }
 
   private BooleanExpression cursorPredicate(
-      QReview r, String cursor, SortType sortType, OrderType orderType) {
+      QReview r, String cursor, ReviewSortType reviewSortType, OrderType orderType) {
     if (cursor == null || cursor.isBlank()) return null;
 
     String[] parts = cursor.split("\\|");
@@ -66,7 +70,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
       return null;
     }
 
-    if (sortType == SortType.RATING) {
+    if (reviewSortType == ReviewSortType.RATING) {
       BigDecimal curRating;
       try {
         curRating = new BigDecimal(parts[0]);
@@ -99,10 +103,11 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
   }
 
   @SuppressWarnings("unchecked")
-  private OrderSpecifier<?>[] orderSpecifiers(QReview r, SortType sortType, OrderType orderType) {
+  private OrderSpecifier<?>[] orderSpecifiers(
+      QReview r, ReviewSortType reviewSortType, OrderType orderType) {
     Order dir = (orderType == OrderType.DESC) ? Order.DESC : Order.ASC;
 
-    if (sortType == SortType.RATING) {
+    if (reviewSortType == ReviewSortType.RATING) {
       return new OrderSpecifier[] {
         new OrderSpecifier<>(dir, r.rating), new OrderSpecifier<>(dir, r.id) // tie-breaker
       };

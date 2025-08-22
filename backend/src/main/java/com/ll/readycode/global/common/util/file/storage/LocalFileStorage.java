@@ -5,10 +5,14 @@ import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RequiredArgsConstructor
 @Repository
 public class LocalFileStorage implements FileStorage {
@@ -16,18 +20,25 @@ public class LocalFileStorage implements FileStorage {
 
   @Override
   public String save(MultipartFile file, String saveAsName) {
+    if (file == null || file.isEmpty()) {
+      throw new CustomException(ErrorCode.FILE_SAVE_ERROR);
+    }
+
     String fullPath = filePathResolver.resolveFilePath(saveAsName);
     File target = new File(fullPath);
-
     File parent = target.getParentFile();
+
     if (parent != null && !parent.exists() && !parent.mkdirs()) {
       throw new CustomException(ErrorCode.FILE_SAVE_ERROR);
     }
 
-    try {
-      file.transferTo(target);
+    try (var in = file.getInputStream()) {
+      Files.copy(in, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
       return fullPath;
+
     } catch (IOException | IllegalStateException e) {
+      log.error("FILE_SAVE_ERROR path={}, cause={}", fullPath, e.toString(), e);
       throw new CustomException(ErrorCode.FILE_SAVE_ERROR);
     }
   }

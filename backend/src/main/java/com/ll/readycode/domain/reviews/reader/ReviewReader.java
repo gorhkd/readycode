@@ -1,9 +1,9 @@
 package com.ll.readycode.domain.reviews.reader;
 
 import com.ll.readycode.domain.reviews.entity.Review;
-import com.ll.readycode.domain.reviews.enums.OrderType;
-import com.ll.readycode.domain.reviews.enums.SortType;
+import com.ll.readycode.domain.reviews.query.ReviewSortType;
 import com.ll.readycode.domain.reviews.repository.ReviewRepository;
+import com.ll.readycode.global.common.types.OrderType;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.util.List;
@@ -38,8 +38,12 @@ public class ReviewReader {
 
   // 템플릿별 리뷰 목록 조회
   public List<Review> findByTemplateWithCursor(
-      Long templateId, String cursor, int limit, SortType sortType, OrderType orderType) {
+      Long templateId,
+      String cursor,
+      int limit,
+      ReviewSortType reviewSortType,
+      OrderType orderType) {
     return reviewRepository.findByTemplateWithCursor(
-        templateId, cursor, limit, sortType, orderType);
+        templateId, cursor, limit, reviewSortType, orderType);
   }
 }
