@@ -33,10 +33,7 @@ public class UserProfileService {
   @Transactional
   public Token signup(TempUserPrincipal tempUserPrincipal, Signup signupRequest) {
 
-    // 임시 토큰이 유효하지 않을 경우, 401에러
-    if (tempUserPrincipal == null) {
-      throw new CustomException(INVALID_TOKEN);
-    }
+    checkUserExists(tempUserPrincipal);
 
     UserAuth userAuth =
         UserAuth.builder()
@@ -78,10 +75,7 @@ public class UserProfileService {
   @Transactional
   public void update(UserPrincipal userPrincipal, UpdateProfile updateProfile) {
 
-    // 유효하지 않는 토큰일 경우, 401 에러 반환
-    if (userPrincipal == null) {
-      throw new CustomException(INVALID_TOKEN);
-    }
+    checkUserExists(userPrincipal);
 
     userPrincipal.getUserProfile().updateNickname(updateProfile.nickname());
   }
@@ -89,10 +83,7 @@ public class UserProfileService {
   @Transactional(readOnly = true)
   public ProfileWithSocial getProfileWithSocialInfo(UserPrincipal userPrincipal) {
 
-    // 유효하지 않는 토큰일 경우, 401 에러 반환
-    if (userPrincipal == null) {
-      throw new CustomException(INVALID_TOKEN);
-    }
+    checkUserExists(userPrincipal);
 
     Long userProfileId = userPrincipal.getUserProfile().getId();
     UserProfile userProfile =
@@ -120,10 +111,7 @@ public class UserProfileService {
   @Transactional
   public void delete(UserPrincipal userPrincipal) {
 
-    // 유효하지 않는 토큰일 경우, 401 에러 반환
-    if (userPrincipal == null) {
-      throw new CustomException(INVALID_TOKEN);
-    }
+    checkUserExists(userPrincipal);
 
     UserProfile userProfile = userPrincipal.getUserProfile();
     userProfile.updateDeletedStatus(true);
@@ -132,10 +120,7 @@ public class UserProfileService {
   @Transactional
   public void restore(UserPrincipal userPrincipal) {
 
-    // 유효하지 않는 토큰일 경우, 401 에러 반환
-    if (userPrincipal == null) {
-      throw new CustomException(INVALID_TOKEN);
-    }
+    checkUserExists(userPrincipal);
 
     UserProfile userProfile = userPrincipal.getUserProfile();
 
@@ -145,5 +130,19 @@ public class UserProfileService {
     }
 
     userProfile.updateDeletedStatus(false);
+  }
+
+  private void checkUserExists(UserPrincipal userPrincipal) {
+    // 유효하지 않는 토큰일 경우, 401 에러 반환
+    if (userPrincipal == null) {
+      throw new CustomException(INVALID_TOKEN);
+    }
+  }
+
+  private void checkUserExists(TempUserPrincipal tempUserPrincipal) {
+    // 유효하지 않는 임시 토큰일 경우, 401 에러 반환
+    if (tempUserPrincipal == null) {
+      throw new CustomException(INVALID_TOKEN);
+    }
   }
 }

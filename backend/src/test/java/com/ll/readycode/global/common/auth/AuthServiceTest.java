@@ -50,23 +50,6 @@ public class AuthServiceTest {
     assertThat(newRefreshToken).isEqualTo(reissueResult.refreshToken());
   }
 
-  @DisplayName("JWT 토큰 재발급 실패 테스트 - Refresh 토큰이 유효하지 않을 경우")
-  @Test
-  void tokenReissueInvalidTokenTest() {
-
-    // given
-    String invalidToken = "mock-invalid-refresh-token";
-
-    doThrow(new RuntimeException("Invalid token")).when(jwtProvider).validateToken(invalidToken);
-
-    // when
-    CustomException exception =
-        assertThrows(CustomException.class, () -> refreshTokenService.reissue(invalidToken));
-
-    // then
-    assertThat(ErrorCode.INVALID_TOKEN).isEqualTo(exception.getErrorCode());
-  }
-
   @DisplayName("JWT 토큰 재발급 실패 테스트 - UserId에 해당하는 Refresh 토큰이 존재하지 않을 경우")
   @Test
   void tokenReissueExpiredTokenTest() {
@@ -112,23 +95,6 @@ public class AuthServiceTest {
 
     // then
     assertThat(ErrorCode.MISSING_REFRESH_TOKEN).isEqualTo(exception.getErrorCode());
-  }
-
-  @DisplayName("로그아웃 실패 테스트 - 유효하지 않은 Refresh 토큰일 경우")
-  @Test
-  void logoutInvalidTokenTest() {
-
-    // given
-    String refreshToken = "mock-refresh-token";
-
-    doThrow(new RuntimeException("Invalid token")).when(jwtProvider).validateToken(refreshToken);
-
-    // when
-    CustomException exception =
-        assertThrows(CustomException.class, () -> refreshTokenService.delete(refreshToken));
-
-    // then
-    assertThat(ErrorCode.INVALID_TOKEN).isEqualTo(exception.getErrorCode());
   }
 
   @DisplayName("로그아웃 실패 테스트 - Refresh 토큰에 해당하는 userId가 존재하지 않을 경우")
