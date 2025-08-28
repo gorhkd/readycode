@@ -1,6 +1,7 @@
 import type { operations } from '@/api/dto.ts'
 import api from '@/api/axiosConfig.ts'
 
+/********** 타입 정리 ******************************/
 // 조회
 export type GetTemplatesQuery = operations['getTemplates']['parameters']['query']
 type GetTemplatesResponse = operations['getTemplates']['responses'][200]['content']['*/*']
@@ -18,6 +19,7 @@ export type ModifyTemplatePath = operations['modifyTemplate']['parameters']['pat
 type ModifyTemplateRequest = operations['modifyTemplate']['requestBody']['content']['application/json']
 type ModifyTemplateResponse = operations['modifyTemplate']['responses'][200]['content']['*/*']
 
+/********** API 호출 함수 ******************************/
 // 조회
 export async function getTemplates(params: GetTemplatesQuery = {}) {
   const { data } = await api.get<GetTemplatesResponse>('/templates', { params })
