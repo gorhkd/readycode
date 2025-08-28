@@ -1,5 +1,7 @@
 package com.ll.readycode.api.templates.dto.response;
 
+import static com.ll.readycode.global.common.util.NumberFormatUtils.formatToOneDecimal;
+
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -14,6 +16,8 @@ public record TemplateDetailResponse(
     @Schema(description = "이미지 URL", example = "https://image.url/sample.png") String imageUrl,
     @Schema(description = "가격 (포인트)", example = "300") int price,
     @Schema(description = "카테고리 이름", example = "백엔드") String category,
+    @Schema(description = "리뷰 총 개수", example = "100") long reviewCount,
+    @Schema(description = "별별점 평균(소수 1자리, 절삭)", example = "4.5") String avgRating,
     @Schema(description = "생성일시", example = "2024-12-10T12:00:00") LocalDateTime createdAt,
     @Schema(description = "수정일시", example = "2024-12-11T13:00:00") LocalDateTime updatedAt,
     @Schema(description = "사용자 구매 여부", example = "true") boolean purchased) {
@@ -25,6 +29,8 @@ public record TemplateDetailResponse(
         .imageUrl(template.getImage())
         .price(template.getPrice())
         .category(template.getCategory().getName())
+        .reviewCount(template.getReviewCount())
+        .avgRating(formatToOneDecimal(template.getAvgRating()))
         .createdAt(template.getCreatedAt())
         .updatedAt(template.getUpdatedAt())
         .purchased(purchased)

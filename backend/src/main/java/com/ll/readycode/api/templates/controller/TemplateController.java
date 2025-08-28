@@ -5,6 +5,7 @@ import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateDetailResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateResponse;
 import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
+import com.ll.readycode.domain.templates.downloads.service.TemplateDownloadService;
 import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
@@ -12,14 +13,18 @@ import com.ll.readycode.global.common.auth.user.UserPrincipal;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "템플릿 API", description = "템플릿 조회, 생성, 수정, 삭제 등의 기능을 제공합니다.")
 @RequestMapping("/api/templates")
@@ -28,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 public class TemplateController {
   private final TemplateService templateService;
   private final TemplatePurchaseService templatePurchaseService;
+  private final TemplateDownloadService templateDownloadService;
 
   @Operation(summary = "템플릿 목록 조회", description = "템플릿을 최신순 기준으로 커서 기반 페이징 방식으로 조회합니다.")
   @GetMapping
@@ -35,7 +41,7 @@ public class TemplateController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           LocalDateTime cursor,
       @RequestParam(defaultValue = "10") int limit) {
-    TemplateScrollResponse response = templateService.getTemplates(cursor, limit);
+    TemplateScrollResponse response = templateService.getTemplateList(cursor, limit);
     return ResponseEntity.ok(SuccessResponse.of("템플릿 목록을 성공적으로 조회했습니다.", response));
   }
 
@@ -58,28 +64,47 @@ public class TemplateController {
   }
 
   @Operation(summary = "템플릿 생성", description = "템플릿을 생성합니다.")
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<SuccessResponse<TemplateResponse>> createTemplate(
-      @Valid @RequestBody TemplateCreateRequest request,
+      @RequestPart("template") @Valid TemplateCreateRequest request,
+      @RequestPart("file") MultipartFile file,
       @AuthenticationPrincipal UserPrincipal userPrincipal) {
-    Template template = templateService.create(request, userPrincipal.getUserProfile());
+    Template template = templateService.create(request, file, userPrincipal.getUserProfile());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.of("게시물이 성공적으로 생성되었습니다.", TemplateResponse.of(template)));
   }
 
   @Operation(summary = "템플릿 수정", description = "템플릿 ID를 기준으로 수정합니다.")
-  @PatchMapping("/{templatesId}")
+  @PatchMapping(value = "/{templateId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<SuccessResponse<TemplateResponse>> modifyTemplate(
-      @Valid @RequestBody TemplateUpdateRequest request, @PathVariable Long templatesId) {
-    Template template = templateService.update(templatesId, request);
+      @RequestPart("request") @Valid TemplateUpdateRequest request,
+      @RequestPart(value = "file", required = false) MultipartFile file,
+      @PathVariable Long templateId,
+      @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    Template template =
+        templateService.update(templateId, request, userPrincipal.getUserProfile(), file);
     return ResponseEntity.ok(
         SuccessResponse.of("게시물이 성공적으로 수정되었습니다.", TemplateResponse.of(template)));
   }
 
   @Operation(summary = "템플릿 삭제", description = "템플릿 ID를 기준으로 삭제합니다.")
   @DeleteMapping("/{templatesId}")
-  public ResponseEntity<SuccessResponse> deleteTemplate(@PathVariable Long templatesId) {
-    templateService.delete(templatesId);
+  public ResponseEntity<SuccessResponse> deleteTemplate(
+      @PathVariable Long templatesId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    templateService.delete(templatesId, userPrincipal.getUserProfile());
     return ResponseEntity.ok(SuccessResponse.of("게시물이 성공적으로 삭제되었습니다.", null));
+  }
+
+  @GetMapping("/{templateId}/download")
+  public ResponseEntity<Resource> downloadTemplate(
+      @PathVariable Long templateId,
+      @AuthenticationPrincipal UserPrincipal userPrincipal,
+      HttpServletRequest request) {
+
+    String ip = request.getRemoteAddr();
+    String userAgent = request.getHeader("User-Agent");
+
+    return templateDownloadService.downloadTemplate(
+        templateId, userPrincipal.getUserProfile(), ip, userAgent);
   }
 }

@@ -57,6 +57,7 @@ public class UserProfileServiceTest {
     String nickname = "mock-nickname";
     String phoneNumber = "mock-phone-number";
     UserPurpose purpose = UserPurpose.LEARNING;
+    UserRole role = UserRole.USER;
     String newAccessToken = "mock-new-access-token";
     String newRefreshToken = "mock-new-refresh-token";
     UserProfile userProfile =
@@ -64,13 +65,15 @@ public class UserProfileServiceTest {
             .nickname(nickname)
             .phoneNumber(phoneNumber)
             .purpose(purpose)
-            .role(UserRole.USER)
+            .role(role)
             .build();
 
     TempUserPrincipal tempUserPrincipal =
         TempUserPrincipal.builder().provider(provider).providerId(providerId).email(email).build();
 
-    Signup signupRequest = new Signup(nickname, phoneNumber, purpose);
+
+    Signup signupRequest = new Signup(nickname, phoneNumber, purpose, UserRole.USER);
+
     ReflectionTestUtils.setField(userProfile, "id", 1L);
 
     when(userProfileRepository.save(any(UserProfile.class))).thenReturn(userProfile);
@@ -277,7 +280,8 @@ public class UserProfileServiceTest {
     UserPrincipal userPrincipal = new UserPrincipal(userProfile);
 
     // when
-    CustomException exception = assertThrows(CustomException.class, () -> userProfileService.restore(userPrincipal));
+    CustomException exception =
+        assertThrows(CustomException.class, () -> userProfileService.restore(userPrincipal));
 
     // then
     assertThat(ALREADY_ACTIVE_USER).isEqualTo(exception.getErrorCode());
