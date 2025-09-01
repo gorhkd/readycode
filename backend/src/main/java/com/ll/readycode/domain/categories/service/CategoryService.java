@@ -70,4 +70,16 @@ public class CategoryService {
       throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
     }
   }
+
+  @Transactional(readOnly = true)
+  public Long countCategories() {
+    return categoryRepository.count();
+  }
+
+  @Transactional(readOnly = true)
+  public Category findByName(String name) {
+    return categoryRepository
+        .findByName(name)
+        .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+  }
 }
