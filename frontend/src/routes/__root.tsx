@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { Outlet, createRootRoute } from '@tanstack/react-router'
 import Navbar from '@/components/common/navbar/Navbar.tsx'
 import Footer from '@/components/common/Footer.tsx'
 
@@ -8,10 +8,10 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
 
-      <main className="flex-grow pt-18 p-1">
+      <main className="flex flex-grow p-1">
         <Outlet />
       </main>
 
