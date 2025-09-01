@@ -2,6 +2,8 @@
 
 /** @type {import('prettier').Config} */
 const config = {
+  plugins: ['prettier-plugin-tailwindcss'],
+  tailwindFunctions: ['clsx', 'cn', 'cva', 'twMerge', 'twJoin'],
   arrowParens: 'always',
   bracketSpacing: true,
   jsxSingleQuote: false,
