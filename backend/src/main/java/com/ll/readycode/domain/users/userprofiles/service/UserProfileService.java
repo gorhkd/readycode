@@ -132,6 +132,13 @@ public class UserProfileService {
     userProfile.updateDeletedStatus(false);
   }
 
+  @Transactional(readOnly = true)
+  public UserProfile findByNickname(String nickname) {
+    return userProfileRepository
+        .findByNickname(nickname)
+        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+  }
+
   private void checkUserExists(UserPrincipal userPrincipal) {
     // 유효하지 않는 토큰일 경우, 401 에러 반환
     if (userPrincipal == null) {
