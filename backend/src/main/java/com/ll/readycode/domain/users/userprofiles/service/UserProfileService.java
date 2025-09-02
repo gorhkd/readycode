@@ -137,6 +137,7 @@ public class UserProfileService {
     return userProfileRepository
         .findByNickname(nickname)
         .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+  }
 
   private void checkUserExists(UserPrincipal userPrincipal) {
     // 유효하지 않는 토큰일 경우, 401 에러 반환
