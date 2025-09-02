@@ -75,6 +75,12 @@ class TemplateServiceTest {
         .build();
   }
 
+  private String decode(String b64) {
+    if (b64 == null) return null;
+    return new String(
+        java.util.Base64.getUrlDecoder().decode(b64), java.nio.charset.StandardCharsets.UTF_8);
+  }
+
   @Test
   @DisplayName("템플릿 생성 성공")
   void createTemplate_success() {
@@ -157,7 +163,14 @@ class TemplateServiceTest {
 
     given(
             templateRepository.findScrollTemplates(
-                isNull(), eq(TemplateSortType.LATEST), eq(OrderType.DESC), isNull(), eq(fetchSize)))
+                eq(TemplateSortType.LATEST),
+                eq(OrderType.DESC),
+                isNull(),
+                eq(fetchSize),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull()))
         .willReturn(templates);
 
     // when
@@ -169,7 +182,14 @@ class TemplateServiceTest {
     assertThat(res.nextCursor()).isNull(); // hasNext=false 이므로
     verify(templateRepository)
         .findScrollTemplates(
-            isNull(), eq(TemplateSortType.LATEST), eq(OrderType.DESC), isNull(), eq(fetchSize));
+            eq(TemplateSortType.LATEST),
+            eq(OrderType.DESC),
+            isNull(),
+            eq(fetchSize),
+            isNull(),
+            isNull(),
+            isNull(),
+            isNull());
   }
 
   @Test
@@ -188,7 +208,14 @@ class TemplateServiceTest {
 
     given(
             templateRepository.findScrollTemplates(
-                isNull(), eq(TemplateSortType.LATEST), eq(OrderType.DESC), isNull(), eq(fetchSize)))
+                eq(TemplateSortType.LATEST),
+                eq(OrderType.DESC),
+                isNull(),
+                eq(fetchSize),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull()))
         .willReturn(repoRows);
 
     // when
@@ -198,7 +225,7 @@ class TemplateServiceTest {
     // then (화면에는 1개만, nextCursor는 화면 마지막=ts1|10)
     assertThat(res.templates()).hasSize(1);
     assertThat(res.templates().get(0).id()).isEqualTo(10L);
-    assertThat(res.nextCursor()).isEqualTo("2025-08-22T12:00:00|10");
+    assertThat(decode(res.nextCursor())).isEqualTo("2025-08-22T12:00:00|10");
   }
 
   @Test
@@ -216,7 +243,14 @@ class TemplateServiceTest {
 
     given(
             templateRepository.findScrollTemplates(
-                isNull(), eq(TemplateSortType.RATING), eq(OrderType.DESC), isNull(), eq(fetchSize)))
+                eq(TemplateSortType.RATING),
+                eq(OrderType.DESC),
+                isNull(),
+                eq(fetchSize),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull()))
         .willReturn(repoRows);
 
     // when
@@ -225,7 +259,7 @@ class TemplateServiceTest {
 
     // then
     assertThat(res.templates()).hasSize(1);
-    assertThat(res.nextCursor()).isEqualTo("4.5|2025-08-22T13:00:00|100");
+    assertThat(decode(res.nextCursor())).isEqualTo("4.5|2025-08-22T13:00:00|100");
   }
 
   @Test
@@ -242,11 +276,14 @@ class TemplateServiceTest {
 
     given(
             templateRepository.findScrollTemplates(
-                isNull(),
                 eq(TemplateSortType.POPULAR),
                 eq(OrderType.DESC),
                 isNull(),
-                eq(fetchSize)))
+                eq(fetchSize),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull()))
         .willReturn(repoRows);
 
     // when
@@ -255,7 +292,7 @@ class TemplateServiceTest {
 
     // then
     assertThat(res.templates()).hasSize(1);
-    assertThat(res.nextCursor()).isEqualTo("37|2025-08-22T14:00:00|200");
+    assertThat(decode(res.nextCursor())).isEqualTo("37|2025-08-22T14:00:00|200");
   }
 
   @Test
@@ -266,7 +303,14 @@ class TemplateServiceTest {
     int fetchSize = limit + 1;
     given(
             templateRepository.findScrollTemplates(
-                any(), eq(TemplateSortType.LATEST), any(OrderType.class), any(), eq(fetchSize)))
+                eq(TemplateSortType.LATEST),
+                any(OrderType.class),
+                any(),
+                eq(fetchSize),
+                any(),
+                any(),
+                any(),
+                any()))
         .willReturn(List.of());
 
     // when
@@ -277,7 +321,15 @@ class TemplateServiceTest {
     assertThat(res.templates()).isEmpty();
     assertThat(res.nextCursor()).isNull();
     verify(templateRepository)
-        .findScrollTemplates(any(), eq(TemplateSortType.LATEST), any(), any(), eq(fetchSize));
+        .findScrollTemplates(
+            eq(TemplateSortType.LATEST),
+            any(OrderType.class),
+            any(),
+            eq(fetchSize),
+            any(),
+            any(),
+            any(),
+            any());
   }
 
   @Test
@@ -292,7 +344,14 @@ class TemplateServiceTest {
     doNothing().when(categoryService).assertCategoryExists(categoryId);
     given(
             templateRepository.findScrollTemplates(
-                any(), any(), any(), eq(categoryId), eq(fetchSize)))
+                any(TemplateSortType.class),
+                any(OrderType.class),
+                eq(categoryId),
+                eq(fetchSize),
+                any(),
+                any(),
+                any(),
+                any()))
         .willReturn(List.of());
 
     // when
