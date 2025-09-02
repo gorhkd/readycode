@@ -1,5 +1,7 @@
 package com.ll.readycode.domain.templates.templates.service;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.ll.readycode.api.templates.dto.request.TemplateCreateRequest;
 import com.ll.readycode.api.templates.dto.request.TemplateUpdateRequest;
 import com.ll.readycode.api.templates.dto.response.TemplateScrollResponse;
@@ -18,7 +20,9 @@ import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +36,8 @@ public class TemplateService {
   private final TemplateFileService templateFileService;
   private final CategoryService categoryService;
 
+  private static final Base64.Encoder B64 = Base64.getUrlEncoder().withoutPadding();
+  private static final Base64.Decoder B64D = Base64.getUrlDecoder();
   private static final DateTimeFormatter CURSOR_FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
   private static final String DELIM = "|";
 
@@ -102,8 +108,36 @@ public class TemplateService {
     int pageSize = PaginationPolicy.clamp(limit);
     int fetchSize = pageSize + 1;
 
+    LocalDateTime ts = null;
+    Long lastId = null;
+    BigDecimal rating = null;
+    Long cnt = null;
+
+    if (cursor != null && !cursor.isBlank()) {
+      switch (sortType) {
+        case LATEST -> {
+          String[] p = decodeCursorParts(cursor, 2); // [ts, id]
+          ts = LocalDateTime.parse(p[0], CURSOR_FMT);
+          lastId = parseLongStrict(p[1]);
+        }
+        case RATING -> {
+          String[] p = decodeCursorParts(cursor, 3); // [rating, ts, id]
+          rating = new BigDecimal(p[0]);
+          ts = LocalDateTime.parse(p[1], CURSOR_FMT);
+          lastId = parseLongStrict(p[2]);
+        }
+        case POPULAR -> {
+          String[] p = decodeCursorParts(cursor, 3); // [count, ts, id]
+          cnt = parseLongStrict(p[0]);
+          ts = LocalDateTime.parse(p[1], CURSOR_FMT);
+          lastId = parseLongStrict(p[2]);
+        }
+      }
+    }
+
     List<Template> templates =
-        templateRepository.findScrollTemplates(cursor, sortType, orderType, categoryId, fetchSize);
+        templateRepository.findScrollTemplates(
+            sortType, orderType, categoryId, fetchSize, ts, lastId, rating, cnt);
 
     boolean hasNext = templates.size() > pageSize;
     if (hasNext) {
@@ -125,18 +159,37 @@ public class TemplateService {
     String ts = t.getCreatedAt().format(CURSOR_FMT);
     Long id = t.getId();
 
-    return switch (sortType) {
-      case LATEST -> ts + DELIM + id;
-      case RATING -> {
-        BigDecimal rating = t.getAvgRating() == null ? BigDecimal.ZERO : t.getAvgRating();
-        String r = rating.stripTrailingZeros().toPlainString();
-        yield r + DELIM + ts + DELIM + id;
-      }
-      case POPULAR -> {
-        long cnt = (t.getPurchaseCount() == null) ? 0L : t.getPurchaseCount();
-        yield cnt + DELIM + ts + DELIM + id;
-      }
-    };
+    String raw =
+        switch (sortType) {
+          case LATEST -> ts + DELIM + id;
+          case RATING -> {
+            BigDecimal rating = t.getAvgRating() == null ? BigDecimal.ZERO : t.getAvgRating();
+            String r = rating.stripTrailingZeros().toPlainString();
+            yield r + DELIM + ts + DELIM + id;
+          }
+          case POPULAR -> {
+            long cnt = (t.getPurchaseCount() == null) ? 0L : t.getPurchaseCount();
+            yield cnt + DELIM + ts + DELIM + id;
+          }
+        };
+
+    return B64.encodeToString(raw.getBytes(UTF_8));
+  }
+
+  private String[] decodeCursorParts(String cursor, int expectedParts) {
+    String trimmed = cursor == null ? "" : cursor.trim();
+    String raw = new String(B64D.decode(trimmed), UTF_8);
+    String[] parts = raw.split("\\|", -1);
+    if (parts.length != expectedParts) throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+    return parts;
+  }
+
+  private long parseLongStrict(String s) {
+    try {
+      return Long.parseLong(s);
+    } catch (NumberFormatException e) {
+      throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+    }
   }
 
   @Transactional(readOnly = true)
@@ -162,5 +215,10 @@ public class TemplateService {
     if (!template.getSeller().getId().equals(userId)) {
       throw new CustomException(ErrorCode.TEMPLATE_ACCESS_DENIED);
     }
+  }
+
+  @Transactional(readOnly = true)
+  public Long countTemplates() {
+    return templateRepository.count();
   }
 }
