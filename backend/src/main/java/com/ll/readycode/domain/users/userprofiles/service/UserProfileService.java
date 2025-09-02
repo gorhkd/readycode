@@ -146,4 +146,11 @@ public class UserProfileService {
 
     userProfile.updateDeletedStatus(false);
   }
+
+  @Transactional(readOnly = true)
+  public UserProfile findByNickname(String nickname) {
+    return userProfileRepository
+        .findByNickname(nickname)
+        .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+  }
 }

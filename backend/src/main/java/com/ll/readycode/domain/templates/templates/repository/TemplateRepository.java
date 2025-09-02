@@ -19,4 +19,8 @@ public interface TemplateRepository
 
   @Query("SELECT t FROM Template t JOIN FETCH t.category WHERE t.id = :templateId")
   Optional<Template> findByIdWithCategory(@Param("templateId") Long templateId);
+
+  boolean existsBySellerIdAndTitle(Long id, String title);
+
+  Optional<Template> findBySellerIdAndTitle(Long id, String title);
 }
