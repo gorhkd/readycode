@@ -57,9 +57,29 @@ public class CategoryService {
   }
 
   @Transactional(readOnly = true)
-  public Category findCategoryById(Long categoriesId) {
+  public Category findCategoryById(Long categoryId) {
     return categoryRepository
-        .findById(categoriesId)
+        .findById(categoryId)
+        .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+  }
+
+  @Transactional(readOnly = true)
+  public void assertCategoryExists(Long categoryId) {
+    Boolean exist = categoryRepository.existsById(categoryId);
+    if (!exist) {
+      throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
+    }
+  }
+
+  @Transactional(readOnly = true)
+  public Long countCategories() {
+    return categoryRepository.count();
+  }
+
+  @Transactional(readOnly = true)
+  public Category findByName(String name) {
+    return categoryRepository
+        .findByName(name)
         .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
   }
 }

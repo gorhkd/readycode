@@ -6,14 +6,15 @@ import com.ll.readycode.api.reviews.dto.response.CursorPage;
 import com.ll.readycode.api.reviews.dto.response.ReviewResponse;
 import com.ll.readycode.api.reviews.dto.response.ReviewSummaryResponse;
 import com.ll.readycode.domain.reviews.entity.Review;
-import com.ll.readycode.domain.reviews.enums.OrderType;
-import com.ll.readycode.domain.reviews.enums.SortType;
+import com.ll.readycode.domain.reviews.query.ReviewSortType;
 import com.ll.readycode.domain.reviews.reader.ReviewReader;
 import com.ll.readycode.domain.reviews.repository.ReviewRepository;
 import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.global.common.pagination.PaginationPolicy;
+import com.ll.readycode.global.common.types.OrderType;
 import com.ll.readycode.global.exception.CustomException;
 import com.ll.readycode.global.exception.ErrorCode;
 import java.math.BigDecimal;
@@ -34,7 +35,7 @@ public class ReviewService {
   @Transactional
   public ReviewResponse createReview(Long templateId, UserProfile user, ReviewCreateRequest req) {
     Template template = templateService.findTemplateById(templateId);
-    templatePurchaseService.validatePurchasedOrThrow(user.getId(), templateId);
+    templatePurchaseService.throwIfNotPurchased(user.getId(), templateId);
 
     validateNotAlreadyReviewed(user.getId(), templateId);
 
@@ -55,18 +56,18 @@ public class ReviewService {
   @Transactional(readOnly = true)
   public CursorPage<ReviewSummaryResponse> getReviewList(
       Long templateId, String cursor, Integer limit, String sort, String order) {
-    SortType sortType = SortType.from(sort);
+    ReviewSortType reviewSortType = ReviewSortType.from(sort);
     OrderType orderType = OrderType.from(order);
-    int pageSize = (limit == null) ? 10 : Math.min(Math.max(limit, 1), 50);
+    int pageSize = PaginationPolicy.clamp(limit);
 
     List<Review> rows =
         reviewReader.findByTemplateWithCursor(
-            templateId, cursor, pageSize + 1, sortType, orderType);
+            templateId, cursor, pageSize + 1, reviewSortType, orderType);
 
     boolean hasNext = rows.size() > pageSize;
     if (hasNext) rows = rows.subList(0, pageSize);
 
-    String nextCursor = hasNext ? encodeCursor(rows.get(rows.size() - 1), sortType) : null;
+    String nextCursor = hasNext ? encodeCursor(rows.get(rows.size() - 1), reviewSortType) : null;
 
     List<ReviewSummaryResponse> items = rows.stream().map(ReviewSummaryResponse::of).toList();
 
@@ -107,8 +108,8 @@ public class ReviewService {
     }
   }
 
-  private String encodeCursor(Review r, SortType sortType) {
-    if (sortType == SortType.RATING) {
+  private String encodeCursor(Review r, ReviewSortType reviewSortType) {
+    if (reviewSortType == ReviewSortType.RATING) {
       return r.getRating().toPlainString() + "|" + r.getId();
     }
     return r.getCreatedAt() + "|" + r.getId();
