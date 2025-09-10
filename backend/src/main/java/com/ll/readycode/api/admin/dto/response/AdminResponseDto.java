@@ -12,7 +12,7 @@ public class AdminResponseDto {
 
   @Schema(description = "유저 목록 조회 응답 DTO")
   @Builder
-  public record UserDetails(
+  public record UserProfileDetails(
       @Schema(description = "유저 ID", example = "1") Long userId,
       @Schema(description = "닉네임", example = "홍길동") String nickname,
       @Schema(description = "전화번호", example = "010-1234-5678") String phoneNumber,
@@ -20,8 +20,8 @@ public class AdminResponseDto {
       @Schema(description = "가입일시", example = "2025-01-01T12:34:56") LocalDateTime createdAt,
       @Schema(description = "연동된 SNS 목록") List<SocialDetails> socials) {
 
-    public static UserDetails from(UserProfile userProfile, List<SocialDetails> socials) {
-      return UserDetails.builder()
+    public static UserProfileDetails of(UserProfile userProfile, List<SocialDetails> socials) {
+      return UserProfileDetails.builder()
           .userId(userProfile.getId())
           .nickname(userProfile.getNickname())
           .phoneNumber(userProfile.getPhoneNumber())
@@ -36,9 +36,9 @@ public class AdminResponseDto {
   @Builder
   public record SocialDetails(
       @Schema(description = "SNS 계정 이메일", example = "user@example.com") String email,
-      @Schema(description = "SNS 제공자", example = "KAKAO") String provider) {
+      @Schema(description = "SNS 제공자", example = "kakao") String provider) {
 
-    public static SocialDetails from(UserAuth userAuth) {
+    public static SocialDetails of(UserAuth userAuth) {
       return SocialDetails.builder()
           .email(userAuth.getEmail())
           .provider(userAuth.getProvider())

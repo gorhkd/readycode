@@ -1,6 +1,6 @@
 package com.ll.readycode.api.admin.controller;
 
-import com.ll.readycode.api.admin.dto.response.AdminResponseDto.UserDetails;
+import com.ll.readycode.api.admin.dto.response.AdminResponseDto.UserProfileDetails;
 import com.ll.readycode.domain.admin.service.AdminService;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,9 +24,9 @@ public class AdminController {
 
   @GetMapping("/users")
   @Operation(summary = "유저 목록 조회", description = "가입된 회원 프로필과 연동된 SNS 정보들을 조회합니다.")
-  public ResponseEntity<SuccessResponse<List<UserDetails>>> getProfileWithSocialInfo() {
+  public ResponseEntity<SuccessResponse<List<UserProfileDetails>>> getProfileWithSocialInfo() {
 
-    List<UserDetails> userInfos = adminService.getUserProfilesWithSocialInfo();
+    List<UserProfileDetails> userInfos = adminService.getUserProfilesWithSocialInfo();
 
     return ResponseEntity.ok(SuccessResponse.of(userInfos));
   }
