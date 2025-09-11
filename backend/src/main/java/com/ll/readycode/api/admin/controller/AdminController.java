@@ -36,15 +36,15 @@ public class AdminController {
 
   @GetMapping("/downloads")
   @Operation(summary = "템플릿 다운로드 통계 조회", description = "전체 템플릿의 다운로드 수 통계 정보를 조회합니다.")
-  public ResponseEntity<SuccessResponse<List<TemplateDownloadDetails>>> getTemplateDownloadStatistics(
-      @RequestParam(required = false) LocalDateTime startDate,
-      @RequestParam(required = false) LocalDateTime endDate,
-      @RequestParam(required = false) Long templateId) {
+  public ResponseEntity<SuccessResponse<List<TemplateDownloadDetails>>>
+      getTemplateDownloadStatistics(
+          @RequestParam(required = false) LocalDateTime startDate,
+          @RequestParam(required = false) LocalDateTime endDate,
+          @RequestParam(required = false) Long templateId) {
 
-    List<TemplateDownloadDetails> downloadInfo = adminService.getTemplateDownloadStatistics(
-        startDate, endDate, templateId);
+    List<TemplateDownloadDetails> downloadInfo =
+        adminService.getTemplateDownloadStatistics(startDate, endDate, templateId);
 
-    return ResponseEntity.ok(SuccessResponse.of(
-        "템플릿 다운로드 통계를 성공적으로 조회했습니다.", downloadInfo));
+    return ResponseEntity.ok(SuccessResponse.of("템플릿 다운로드 통계를 성공적으로 조회했습니다.", downloadInfo));
   }
 }

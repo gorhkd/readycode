@@ -51,6 +51,5 @@ public class AdminResponseDto {
   public record TemplateDownloadDetails(
       @Schema(description = "템플릿 ID", example = "1") Long templateId,
       @Schema(description = "템플릿 제목", example = "스프링 시큐리티 JWT 템플릿") String templateTitle,
-      @Schema(description = "다운로드 수", example = "123") Long downloadCount) {
-  }
+      @Schema(description = "다운로드 수", example = "123") Long downloadCount) {}
 }

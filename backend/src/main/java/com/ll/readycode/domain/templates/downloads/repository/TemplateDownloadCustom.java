@@ -7,8 +7,5 @@ import java.util.List;
 public interface TemplateDownloadCustom {
 
   List<TemplateDownloadDetails> findTemplatesForDownloadStatistics(
-      LocalDateTime startDate,
-      LocalDateTime endDate,
-      Long templateId
-  );
+      LocalDateTime startDate, LocalDateTime endDate, Long templateId);
 }

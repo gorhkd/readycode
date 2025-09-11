@@ -19,9 +19,7 @@ public class TemplateDownloadRepositoryImpl implements TemplateDownloadCustom {
 
   @Override
   public List<TemplateDownloadDetails> findTemplatesForDownloadStatistics(
-      LocalDateTime startDate,
-      LocalDateTime endDate,
-      Long templateId) {
+      LocalDateTime startDate, LocalDateTime endDate, Long templateId) {
 
     QTemplate t = QTemplate.template;
     QTemplateDownload td = QTemplateDownload.templateDownload;
@@ -40,14 +38,11 @@ public class TemplateDownloadRepositoryImpl implements TemplateDownloadCustom {
       where.and(t.id.eq(templateId));
     }
 
-    return queryFactory.select(
-            Projections.constructor(TemplateDownloadDetails.class,
-                t.id,
-                t.title,
-                td.id.count()
-            ))
+    return queryFactory
+        .select(
+            Projections.constructor(TemplateDownloadDetails.class, t.id, t.title, td.id.count()))
         .from(td)
-          .join(td.template, t)
+        .join(td.template, t)
         .where(where)
         .groupBy(t.id, t.title)
         .orderBy(t.id.asc())

@@ -25,21 +25,15 @@ public class AdminService {
         .map(
             userProfile ->
                 UserProfileDetails.of(
-                        userProfile,
-                        userProfile.getUserAuths().stream()
-                            .map(SocialDetails::of)
-                            .toList()))
+                    userProfile,
+                    userProfile.getUserAuths().stream().map(SocialDetails::of).toList()))
         .toList();
   }
 
   @Transactional(readOnly = true)
   public List<TemplateDownloadDetails> getTemplateDownloadStatistics(
-      LocalDateTime startDate,
-      LocalDateTime endDate,
-      Long templateId) {
+      LocalDateTime startDate, LocalDateTime endDate, Long templateId) {
     return templateDownloadRepository.findTemplatesForDownloadStatistics(
-        startDate,
-        endDate,
-        templateId);
+        startDate, endDate, templateId);
   }
 }
