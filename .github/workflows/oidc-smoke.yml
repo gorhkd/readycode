@@ -1,6 +1,11 @@
 name: oidc-smoke
 on:
-  workflow_dispatch:        # 수동 실행 버튼
+  workflow_dispatch:
+  push:
+    branches: [ infra/epic ]
+    paths:
+      - '.github/workflows/**'
+      - 'infra/**'
 permissions:
   id-token: write
   contents: read
