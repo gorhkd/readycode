@@ -1,0 +1,66 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: ./gradlew clean bootJar
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: Upload to S3
+        run: aws s3 cp build/libs/app.jar s3://readycode-artifacts-gorhkd223-ap-northeast-2/server/app.jar
+
+      - name: Deploy via SSM
+        run: |
+          aws ssm send-command \
+            --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy readycode app" \
+            --parameters 'commands=["#!/bin/bash
+              set -euo pipefail
+              APP_NAME=readycode
+              APP_PATH=/home/ubuntu/app.jar
+              S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2
+              S3_KEY=server/app.jar
+
+              echo Backing up old jar
+              if [ -f \"$APP_PATH\" ]; then cp $APP_PATH /home/ubuntu/app-rollback.jar; fi
+
+              echo Downloading new jar
+              aws s3 cp s3://$S3_BUCKET/$S3_KEY $APP_PATH
+
+              echo Restarting service
+              sudo systemctl restart $APP_NAME
+
+              echo Health check
+              for i in {1..6}; do
+                sleep 5
+                STATUS=$(curl -s http://127.0.0.1:8080/actuator/health | jq -r .status || true)
+                if [ \"$STATUS\" == \"UP\" ]; then
+                  echo SUCCESS
+                  exit 0
+                fi
+              done
+
+              echo FAIL, rollback
+              cp /home/ubuntu/app-rollback.jar $APP_PATH
+              sudo systemctl restart $APP_NAME
+              exit 1
+            "]'
