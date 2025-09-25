@@ -14,10 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        
       - name: Configure AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+
       - name: Who am I
         run: aws sts get-caller-identity
+
+      - name: Sanity check (region & instance)
+        run: |
+          aws ec2 describe-instances --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" --query 'Reservations[].Instances[].{ID:InstanceId,State:State.Name,Az:Placement.AvailabilityZone,Subnet:SubnetId,Public:PublicIpAddress}'
+          aws ssm describe-instance-information --max-results 50 --query 'InstanceInformationList[].InstanceId'
