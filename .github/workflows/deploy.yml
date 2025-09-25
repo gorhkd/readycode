@@ -9,6 +9,11 @@ on:
 permissions:
   id-token: write
   contents: read
+
+defaults:
+  run:
+    working-directory: backend
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -24,6 +29,12 @@ jobs:
       - name: Build JAR
         run: ./gradlew clean bootJar
 
+      - name: Prepare artifact name
+        run: |
+          JAR="$(ls build/libs/*-SNAPSHOT*.jar 2>/dev/null || ls build/libs/*.jar | head -n 1)"
+          echo "Found: $JAR"
+          cp "$JAR" build/libs/app.jar
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -36,7 +47,7 @@ jobs:
       - name: Deploy via SSM
         run: |
           aws ssm send-command \
-            --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
             --parameters 'commands=["#!/bin/bash
