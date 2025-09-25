@@ -29,6 +29,7 @@ resource "aws_instance" "app" {
   key_name                    = var.key_name
   associate_public_ip_address = true
   user_data                   = local.user_data
+  iam_instance_profile        = "readycode-ec2-role"
 
   tags = { Name = "${var.project_name}-ec2" }
 }
