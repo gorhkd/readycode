@@ -1,4 +1,4 @@
-name: deploy
+name: deploy-backend
 on:
   workflow_dispatch:
   push:
@@ -53,7 +53,8 @@ jobs:
         id: ssm
         run: |
           CMD_ID=$(aws ssm send-command \
-            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --region ap-northeast-2 \
+            --targets "Key=tag:Name,Values=readycode-app" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
             --parameters 'commands=["#!/bin/bash
