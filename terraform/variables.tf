@@ -40,7 +40,7 @@ variable "private_subnet_cidr" {
 # EC2
 variable "instance_type" {
   type    = string
-  default = "t3.micro"
+  default = "t3.small"
 }
 
 # 프리티어
@@ -79,4 +79,8 @@ variable "db_name" {
 variable "aws_profile" {
   type    = string
   default = "readycode-dev"
+}
+
+variable "ami_id" {
+  type = string
 }

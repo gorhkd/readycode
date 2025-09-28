@@ -2,12 +2,12 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${var.project_name}-vpc" }
+  tags                 = { Name = "${var.project_name}-vpc" }
 }
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
-  tags = { Name = "${var.project_name}-igw" }
+  tags   = { Name = "${var.project_name}-igw" }
 }
 
 resource "aws_subnet" "public" {
@@ -15,7 +15,7 @@ resource "aws_subnet" "public" {
   cidr_block              = var.public_subnet_cidr
   availability_zone       = var.az
   map_public_ip_on_launch = true
-  tags = { Name = "${var.project_name}-public-subnet" }
+  tags                    = { Name = "${var.project_name}-public-subnet" }
 }
 
 resource "aws_subnet" "private" {
@@ -23,7 +23,7 @@ resource "aws_subnet" "private" {
   availability_zone       = var.az1
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = false
-  tags = { Name = "readycode-private-subnet-a" }
+  tags                    = { Name = "readycode-private-subnet-a" }
 }
 
 resource "aws_subnet" "private_b" {
@@ -31,7 +31,7 @@ resource "aws_subnet" "private_b" {
   availability_zone       = var.az2
   cidr_block              = "10.0.3.0/24"
   map_public_ip_on_launch = false
-  tags = { Name = "readycode-private-subnet-c" }
+  tags                    = { Name = "readycode-private-subnet-c" }
 }
 
 resource "aws_route_table" "public" {
