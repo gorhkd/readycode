@@ -81,11 +81,11 @@ jobs:
                 sleep 5
                 # 로컬호스트에서 헬스체크 (보안그룹 영향 없음)
                 if curl -f -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
-                  echo Service is UP - checking detailed status
+                  echo Service is responding - checking detailed status
                   STATUS=$(curl -s http://localhost:8080/actuator/health | jq -r .status 2>/dev/null || echo UNKNOWN)
                   echo Health status: $STATUS
                   if [ \"$STATUS\" = \"UP\" ]; then
-                    echo SUCCESS - Deployment completed
+                    echo SUCCESS - Deployment completed successfully
                     exit 0
                   fi
                 fi
