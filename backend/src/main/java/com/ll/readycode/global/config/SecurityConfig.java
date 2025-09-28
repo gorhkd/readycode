@@ -38,7 +38,7 @@ public class SecurityConfig {
             auth ->
                 auth
                     // 1) 공개 엔드포인트 (헬스/핑)
-                    .requestMatchers("/actuator/health", "/ping")
+                    .requestMatchers("/actuator/health", "/actuator/health/**", "/ping")
                     .permitAll()
 
                     // 2) Swagger (운영에서는 닫을 수 있음)
