@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -48,8 +50,9 @@ jobs:
         run: aws s3 cp build/libs/app.jar s3://readycode-artifacts-gorhkd223-ap-northeast-2/server/app.jar
 
       - name: Deploy via SSM
+        id: ssm
         run: |
-          aws ssm send-command \
+          CMD_ID=$(aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
@@ -59,6 +62,8 @@ jobs:
               APP_PATH=/home/ubuntu/app.jar
               S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2
               S3_KEY=server/app.jar
+
+              command -v jq >/dev/null 2>&1 || sudo apt-get update -y && sudo apt-get install -y jq
 
               echo Backing up old jar
               if [ -f \"$APP_PATH\" ]; then cp $APP_PATH /home/ubuntu/app-rollback.jar; fi
@@ -70,17 +75,34 @@ jobs:
               sudo systemctl restart $APP_NAME
 
               echo Health check
-              for i in {1..6}; do
+              for i in {1..12}; do
                 sleep 5
                 STATUS=$(curl -s http://127.0.0.1:8080/actuator/health | jq -r .status || true)
-                if [ \"$STATUS\" == \"UP\" ]; then
+                if [ \"$STATUS\" = \"UP\" ]; then
                   echo SUCCESS
                   exit 0
                 fi
               done
 
               echo FAIL, rollback
-              cp /home/ubuntu/app-rollback.jar $APP_PATH
-              sudo systemctl restart $APP_NAME
+              cp /home/ubuntu/app-rollback.jar $APP_PATH || true
+              sudo systemctl restart $APP_NAME || true
               exit 1
-            "]'
+            "]' \
+            --query "Command.CommandId" --output text)
+
+          echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
+
+      - name: Wait SSM result
+        run: |
+          for i in {1..60}; do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "${{ steps.ssm.outputs.command_id }}" \
+              --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+              --query 'Status' --output text || echo "Pending")
+            echo "SSM Status: $STATUS"
+            if [ "$STATUS" = "Success" ]; then exit 0; fi
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ]; then exit 1; fi
+            sleep 5
+          done
+          echo "Timed out waiting SSM"; exit 1
