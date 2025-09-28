@@ -52,9 +52,10 @@ jobs:
       - name: Deploy via SSM
         id: ssm
         run: |
+          set -euo pipefail
           CMD_ID=$(aws ssm send-command \
             --region ap-northeast-2 \
-            --targets "Key=tag:Name,Values=readycode-app" \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
             --parameters 'commands=["#!/bin/bash
@@ -94,16 +95,57 @@ jobs:
 
           echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
 
-      - name: Wait SSM result
+      - name: Resolve actual targets (debug)
+        id: resolve
         run: |
-          for i in {1..60}; do
-            STATUS=$(aws ssm get-command-invocation \
+          set -euo pipefail
+          # 실제로 이 CommandId가 어떤 인스턴스를 대상으로 잡았는지 조회
+          for i in {1..12}; do
+            JSON=$(aws ssm list-command-invocations \
+              --region ap-northeast-2 \
               --command-id "${{ steps.ssm.outputs.command_id }}" \
-              --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
-              --query 'Status' --output text || echo "Pending")
-            echo "SSM Status: $STATUS"
-            if [ "$STATUS" = "Success" ]; then exit 0; fi
-            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ]; then exit 1; fi
+              --details \
+              --output json)
+            TARGETS=$(echo "$JSON" | jq -r '.CommandInvocations[].InstanceId')
+            echo "Command targets so far: $TARGETS"
+            if [ -n "$TARGETS" ]; then
+              echo "targets=$TARGETS" >> $GITHUB_OUTPUT
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${TARGETS:-}" ]; then
+            echo "No targets resolved for the command. Likely wrong InstanceId/region or IAM policy scoping."
+            exit 1
+          fi
+
+      - name: Wait SSM result (robust)
+        run: |
+          set -euo pipefail
+          CMD_ID="${{ steps.ssm.outputs.command_id }}"
+          TARGETS="${{ steps.resolve.outputs.targets }}"
+
+          echo "Waiting for command $CMD_ID on targets: $TARGETS"
+          # 여러 타깃일 수도 있으니 전부 성공해야 성공으로 간주
+          for i in {1..60}; do
+            ALL_OK=true
+            for T in $TARGETS; do
+              STATUS=$(aws ssm get-command-invocation \
+                --region ap-northeast-2 \
+                --command-id "$CMD_ID" \
+                --instance-id "$T" \
+                --query 'Status' --output text || echo "InvocationDoesNotExist")
+              echo "[$T] $STATUS"
+              case "$STATUS" in
+                Success) : ;;
+                Failed|Cancelled|TimedOut) exit 1 ;;
+                InvocationDoesNotExist|Pending|InProgress|Delayed)
+                  ALL_OK=false
+                  ;;
+                *) ALL_OK=false ;;
+              esac
+            done
+            $ALL_OK && exit 0
             sleep 5
           done
           echo "Timed out waiting SSM"; exit 1
