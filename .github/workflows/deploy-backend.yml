@@ -52,56 +52,50 @@ jobs:
       - name: Deploy via SSM
         id: ssm
         run: |
-          set -euo pipefail
           CMD_ID=$(aws ssm send-command \
-            --region ap-northeast-2 \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
             --parameters 'commands=["#!/bin/bash
               set -euo pipefail
+          
+              # 1) awscli/jq/curl 확보
+              sudo apt-get update -y
+              sudo apt-get install -y awscli jq curl
+              aws --version || true
+          
               APP_NAME=readycode
               APP_PATH=/home/ubuntu/app.jar
               S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2
               S3_KEY=server/app.jar
-          
-              command -v jq >/dev/null 2>&1 || sudo apt-get update -y && sudo apt-get install -y jq
           
               echo Backing up old jar
               if [ -f \"$APP_PATH\" ]; then cp $APP_PATH /home/ubuntu/app-rollback.jar; fi
           
               echo Downloading new jar
               aws s3 cp s3://$S3_BUCKET/$S3_KEY $APP_PATH
+              ls -lh $APP_PATH || true
           
               echo Restarting service
-              sudo systemctl restart $APP_NAME
+              sudo systemctl restart $APP_NAME || { sudo journalctl -u $APP_NAME --no-pager -n 200; exit 1; }
           
-              echo Health check - waiting for service to be ready
-              for i in {1..24}; do
+              echo Health check
+              for i in {1..12}; do
                 sleep 5
-                # 로컬호스트에서 헬스체크 (보안그룹 영향 없음)
-                if curl -f -s http://localhost:8080/actuator/health > /dev/null 2>&1; then
-                  echo Service is responding - checking detailed status
-                  STATUS=$(curl -s http://localhost:8080/actuator/health | jq -r .status 2>/dev/null || echo UNKNOWN)
-                  echo Health status: $STATUS
-                  if [ \"$STATUS\" = \"UP\" ]; then
-                    echo SUCCESS - Deployment completed successfully
-                    exit 0
-                  fi
+                STATUS=$(curl -s http://127.0.0.1:8080/actuator/health | jq -r .status || true)
+                echo STATUS: $STATUS
+                if [ \"$STATUS\" = \"UP\" ]; then
+                  echo SUCCESS
+                  exit 0
                 fi
-                echo Attempt $i/24: Service not ready yet, waiting...
               done
           
-              echo FAIL - Service did not come up in time, rolling back
-              if [ -f /home/ubuntu/app-rollback.jar ]; then
-                cp /home/ubuntu/app-rollback.jar $APP_PATH
-                sudo systemctl restart $APP_NAME
-                echo Rollback completed
-              fi
+              echo FAIL, rollback
+              cp /home/ubuntu/app-rollback.jar $APP_PATH || true
+              sudo systemctl restart $APP_NAME || true
               exit 1
             "]' \
             --query "Command.CommandId" --output text)
-          
           echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
 
       - name: Resolve actual targets (debug)
