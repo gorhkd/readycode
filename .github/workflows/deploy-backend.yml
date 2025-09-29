@@ -52,54 +52,71 @@ jobs:
       - name: Deploy via SSM
         id: ssm
         run: |
+          set -euo pipefail
           CMD_ID=$(aws ssm send-command \
+            --region ap-northeast-2 \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
             --cloud-watch-output-config "CloudWatchOutputEnabled=true" \
             --output-s3-bucket-name readycode-artifacts-gorhkd223-ap-northeast-2 \
             --output-s3-key-prefix ssm-logs/readycode \
-            --parameters 'commands=["#!/bin/bash
-             set -euo pipefail
+            --timeout-seconds 900 \
+            --parameters 'commands=["#!/bin/bash -lc
+          set -euo pipefail
+          set -x
+
+          # 1) awscli/jq/curl 확보 (없을 때만)
+          command -v aws >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y awscli; }
+          command -v jq  >/dev/null 2>&1 || sudo apt-get install -y jq
+          command -v curl>/dev/null 2>&1 || sudo apt-get install -y curl
           
-            # 1) awscli/jq/curl 확보
-            sudo apt-get update -y
-            sudo apt-get install -y awscli jq curl
-            aws --version || true
+          APP_NAME=readycode
+          APP_PATH=/home/ubuntu/app.jar
+          S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2
+          S3_KEY=server/app.jar
           
-            APP_NAME=readycode
-            APP_PATH=/home/ubuntu/app.jar
-            S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2
-            S3_KEY=server/app.jar
+          echo Backing up old jar
+          if [ -f \"$APP_PATH\" ]; then cp \"$APP_PATH\" /home/ubuntu/app-rollback.jar; fi
           
-            echo Backing up old jar
-            if [ -f \"$APP_PATH\" ]; then cp $APP_PATH /home/ubuntu/app-rollback.jar; fi
+          echo Downloading new jar
+          aws s3 cp s3://$S3_BUCKET/$S3_KEY \"$APP_PATH\"
+          ls -lh \"$APP_PATH\" || true
           
-            echo Downloading new jar
-            aws s3 cp s3://$S3_BUCKET/$S3_KEY $APP_PATH
-            ls -lh $APP_PATH || true
+          echo Restarting service
+          sudo systemctl daemon-reload || true
+          if ! sudo systemctl restart \"$APP_NAME\"; then
+          sudo systemctl status \"$APP_NAME\" --no-pager -l || true
+          sudo journalctl -u \"$APP_NAME\" --no-pager -n 200 || true
+          exit 1
+          fi
           
-            echo Restarting service
-            sudo systemctl restart $APP_NAME || { sudo journalctl -u $APP_NAME --no-pager -n 200; exit 1; }
+          # 활성 상태 1차 확인
+          if ! sudo systemctl is-active --quiet \"$APP_NAME\"; then
+          echo 'Service not active right after restart; printing status/journal' >&2
+          sudo systemctl status \"$APP_NAME\" --no-pager -l || true
+          sudo journalctl -u \"$APP_NAME\" --no-pager -n 200 || true
+          fi
           
-            echo Health check
-            for i in {1..12}; do
-            sleep 5
-            STATUS=$(curl -s http://127.0.0.1:8080/actuator/health | jq -r .status || true)
-            echo STATUS: $STATUS
-            if [ \"$STATUS\" = \"UP\" ]; then
-            echo SUCCESS
-            exit 0
-            fi
-            done
+          echo Health check
+          sleep 5  # 워밍업
+          for i in {1..30}; do   # 최대 150초
+          sleep 5
+          STATUS=$(curl -s http://127.0.0.1:8080/actuator/health | jq -r .status || true)
+          echo STATUS: $STATUS
+          if [ \"$STATUS\" = \"UP\" ]; then
+          echo SUCCESS
+          exit 0
+          fi
+          done
           
-            echo FAIL, rollback
-            cp /home/ubuntu/app-rollback.jar $APP_PATH || true
-            sudo systemctl restart $APP_NAME || true
-            exit 1
-            "]' \
+          echo FAIL, rollback
+          cp /home/ubuntu/app-rollback.jar \"$APP_PATH\" || true
+          sudo systemctl restart \"$APP_NAME\" || true
+          exit 1
+          "]' \
                       --query "Command.CommandId" --output text)
-            echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
+          echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
 
       - name: Resolve actual targets (debug)
         id: resolve
@@ -161,14 +178,18 @@ jobs:
           Success)
            : # OK
            ;;
-           Failed|Cancelled|TimedOut|Cancelling)
-           echo "::error::SSM invocation failed on $T with status=$STATUS"
-           exit 1
-           ;;
-           Failed|Cancelled|TimedOut|Cancelling)
-           echo "::error::SSM invocation failed on $T with status=$STATUS"
-           exit 1
-           ;;
+          Failed|Cancelled|TimedOut|Cancelling)
+            echo "::group::SSM failure details for $T"
+            aws ssm get-command-invocation \
+              --region ap-northeast-2 \
+              --command-id "$CMD_ID" \
+              --instance-id "$T" \
+              --query '{Status:Status,Code:ResponseCode,Details:StatusDetails,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
+              --output text || true
+             echo "::endgroup::"
+             echo "::error::SSM invocation failed on $T with status=$STATUS"
+             exit 1
+             ;;
            InvocationDoesNotExist|Pending|InProgress|Delayed|*)
            ALL_OK=false
            ;;
