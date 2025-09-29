@@ -56,47 +56,50 @@ jobs:
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
+            --cloud-watch-output-config "CloudWatchOutputEnabled=true" \
+            --output-s3-bucket-name readycode-artifacts-gorhkd223-ap-northeast-2 \
+            --output-s3-key-prefix ssm-logs/readycode \
             --parameters 'commands=["#!/bin/bash
-              set -euo pipefail
+             set -euo pipefail
           
-              # 1) awscli/jq/curl 확보
-              sudo apt-get update -y
-              sudo apt-get install -y awscli jq curl
-              aws --version || true
+            # 1) awscli/jq/curl 확보
+            sudo apt-get update -y
+            sudo apt-get install -y awscli jq curl
+            aws --version || true
           
-              APP_NAME=readycode
-              APP_PATH=/home/ubuntu/app.jar
-              S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2
-              S3_KEY=server/app.jar
+            APP_NAME=readycode
+            APP_PATH=/home/ubuntu/app.jar
+            S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2
+            S3_KEY=server/app.jar
           
-              echo Backing up old jar
-              if [ -f \"$APP_PATH\" ]; then cp $APP_PATH /home/ubuntu/app-rollback.jar; fi
+            echo Backing up old jar
+            if [ -f \"$APP_PATH\" ]; then cp $APP_PATH /home/ubuntu/app-rollback.jar; fi
           
-              echo Downloading new jar
-              aws s3 cp s3://$S3_BUCKET/$S3_KEY $APP_PATH
-              ls -lh $APP_PATH || true
+            echo Downloading new jar
+            aws s3 cp s3://$S3_BUCKET/$S3_KEY $APP_PATH
+            ls -lh $APP_PATH || true
           
-              echo Restarting service
-              sudo systemctl restart $APP_NAME || { sudo journalctl -u $APP_NAME --no-pager -n 200; exit 1; }
+            echo Restarting service
+            sudo systemctl restart $APP_NAME || { sudo journalctl -u $APP_NAME --no-pager -n 200; exit 1; }
           
-              echo Health check
-              for i in {1..12}; do
-                sleep 5
-                STATUS=$(curl -s http://127.0.0.1:8080/actuator/health | jq -r .status || true)
-                echo STATUS: $STATUS
-                if [ \"$STATUS\" = \"UP\" ]; then
-                  echo SUCCESS
-                  exit 0
-                fi
-              done
+            echo Health check
+            for i in {1..12}; do
+            sleep 5
+            STATUS=$(curl -s http://127.0.0.1:8080/actuator/health | jq -r .status || true)
+            echo STATUS: $STATUS
+            if [ \"$STATUS\" = \"UP\" ]; then
+            echo SUCCESS
+            exit 0
+            fi
+            done
           
-              echo FAIL, rollback
-              cp /home/ubuntu/app-rollback.jar $APP_PATH || true
-              sudo systemctl restart $APP_NAME || true
-              exit 1
+            echo FAIL, rollback
+            cp /home/ubuntu/app-rollback.jar $APP_PATH || true
+            sudo systemctl restart $APP_NAME || true
+            exit 1
             "]' \
-            --query "Command.CommandId" --output text)
-          echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
+                      --query "Command.CommandId" --output text)
+            echo "command_id=$CMD_ID" >> $GITHUB_OUTPUT
 
       - name: Resolve actual targets (debug)
         id: resolve
@@ -157,6 +160,10 @@ jobs:
           case "$STATUS" in
           Success)
            : # OK
+           ;;
+           Failed|Cancelled|TimedOut|Cancelling)
+           echo "::error::SSM invocation failed on $T with status=$STATUS"
+           exit 1
            ;;
            Failed|Cancelled|TimedOut|Cancelling)
            echo "::error::SSM invocation failed on $T with status=$STATUS"
