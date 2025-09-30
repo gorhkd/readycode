@@ -2,11 +2,11 @@ package com.ll.readycode.api.reviews.controller;
 
 import com.ll.readycode.api.reviews.dto.request.ReviewCreateRequest;
 import com.ll.readycode.api.reviews.dto.request.ReviewUpdateRequest;
-import com.ll.readycode.api.reviews.dto.response.CursorPage;
 import com.ll.readycode.api.reviews.dto.response.ReviewResponse;
 import com.ll.readycode.api.reviews.dto.response.ReviewSummaryResponse;
 import com.ll.readycode.domain.reviews.service.ReviewService;
 import com.ll.readycode.global.common.auth.user.UserPrincipal;
+import com.ll.readycode.global.common.pagination.CursorPage;
 import com.ll.readycode.global.common.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

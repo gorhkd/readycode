@@ -1,4 +1,4 @@
-package com.ll.readycode.api.reviews.dto.response;
+package com.ll.readycode.global.common.pagination;
 
 import java.util.List;
 

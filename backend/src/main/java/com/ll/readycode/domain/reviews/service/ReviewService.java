@@ -2,7 +2,6 @@ package com.ll.readycode.domain.reviews.service;
 
 import com.ll.readycode.api.reviews.dto.request.ReviewCreateRequest;
 import com.ll.readycode.api.reviews.dto.request.ReviewUpdateRequest;
-import com.ll.readycode.api.reviews.dto.response.CursorPage;
 import com.ll.readycode.api.reviews.dto.response.ReviewResponse;
 import com.ll.readycode.api.reviews.dto.response.ReviewSummaryResponse;
 import com.ll.readycode.domain.reviews.entity.Review;
@@ -13,6 +12,7 @@ import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseServi
 import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.service.TemplateService;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.global.common.pagination.CursorPage;
 import com.ll.readycode.global.common.pagination.PaginationPolicy;
 import com.ll.readycode.global.common.types.OrderType;
 import com.ll.readycode.global.exception.CustomException;
