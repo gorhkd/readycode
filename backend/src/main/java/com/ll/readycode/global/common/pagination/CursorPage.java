@@ -2,4 +2,4 @@ package com.ll.readycode.global.common.pagination;
 
 import java.util.List;
 
-public record CursorPage<T>(List<T> items, String nextCursor, boolean hasNext) {}
+public record CursorPage<T>(String nextCursor, boolean hasNext, List<T> items) {}

@@ -5,14 +5,14 @@ import com.ll.readycode.global.exception.ErrorCode;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class Encoder {
+public class EncodeHelper {
 
   public static final int ENCODING_TYPE_LONG = 1;
   public static final int ENCODING_TYPE_INTEGER = 2;
   public static final int ENCODING_TYPE_STRING = 3;
 
   // 인스턴스 생성 방지
-  private Encoder() {}
+  private EncodeHelper() {}
 
   /** 인코딩 (Long -> Base64) */
   public static String encode(Long target) {

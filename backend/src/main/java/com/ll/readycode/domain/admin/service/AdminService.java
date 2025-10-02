@@ -10,7 +10,7 @@ import com.ll.readycode.domain.users.userprofiles.repository.UserProfileReposito
 import com.ll.readycode.global.common.pagination.CursorPage;
 import com.ll.readycode.global.common.pagination.PaginationPolicy;
 import com.ll.readycode.global.common.types.OrderType;
-import com.ll.readycode.global.common.util.Encoder;
+import com.ll.readycode.global.common.util.EncodeHelper;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +26,10 @@ public class AdminService {
 
   @Transactional(readOnly = true)
   public CursorPage<UserProfileDetails> getUserProfilesWithSocialInfo(
-      Integer limit, Long cursor, String keyword, String orderTypeStr) {
+      Integer limit, String cursorStr, String keyword, String orderTypeStr) {
 
     int pageSize = PaginationPolicy.clamp(limit);
+    Long cursor = (Long) EncodeHelper.decode(cursorStr, EncodeHelper.ENCODING_TYPE_LONG);
     OrderType orderType = OrderType.from(orderTypeStr);
 
     // 다음 페이지 존재 여부 확인을 위해 +1개 조회
@@ -42,7 +43,7 @@ public class AdminService {
 
     // 다음 커서 생성
     String nextCursor =
-        hasNext ? Encoder.encode(userProfiles.get(userProfiles.size() - 1).getId()) : null;
+        hasNext ? EncodeHelper.encode(userProfiles.get(userProfiles.size() - 1).getId()) : null;
 
     // UserProfile -> UserProfileDetails 변환
     List<UserProfileDetails> items =
@@ -54,7 +55,7 @@ public class AdminService {
                         userProfile.getUserAuths().stream().map(SocialDetails::of).toList()))
             .toList();
 
-    return new CursorPage<>(items, nextCursor, hasNext);
+    return new CursorPage<>(nextCursor, hasNext, items);
   }
 
   @Transactional(readOnly = true)

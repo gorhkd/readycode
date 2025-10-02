@@ -30,7 +30,7 @@ public class AdminController {
   @Operation(summary = "유저 목록 조회", description = "가입된 회원 프로필과 연동된 SNS 정보들을 조회합니다.")
   public ResponseEntity<SuccessResponse<CursorPage<UserProfileDetails>>> getProfileWithSocialInfo(
       @RequestParam(required = false) Integer limit,
-      @RequestParam(required = false) Long cursor,
+      @RequestParam(required = false) String cursor,
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false, defaultValue = "desc") String orderType) {
 

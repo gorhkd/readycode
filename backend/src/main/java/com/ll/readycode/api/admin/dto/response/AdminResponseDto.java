@@ -2,6 +2,7 @@ package com.ll.readycode.api.admin.dto.response;
 
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
+import com.ll.readycode.global.common.util.EncodeHelper;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,7 +14,7 @@ public class AdminResponseDto {
   @Schema(description = "유저 목록 조회 응답 DTO")
   @Builder
   public record UserProfileDetails(
-      @Schema(description = "유저 ID", example = "1") Long userId,
+      @Schema(description = "유저 ID", example = "1") String userId,
       @Schema(description = "닉네임", example = "홍길동") String nickname,
       @Schema(description = "전화번호", example = "010-1234-5678") String phoneNumber,
       @Schema(description = "보유 포인트", example = "1200") Long point,
@@ -22,7 +23,7 @@ public class AdminResponseDto {
 
     public static UserProfileDetails of(UserProfile userProfile, List<SocialDetails> socials) {
       return UserProfileDetails.builder()
-          .userId(userProfile.getId())
+          .userId(EncodeHelper.encode(userProfile.getId()))
           .nickname(userProfile.getNickname())
           .phoneNumber(userProfile.getPhoneNumber())
           .point(0L) // TODO: 결제 시스템 도입 시, 변경 필요

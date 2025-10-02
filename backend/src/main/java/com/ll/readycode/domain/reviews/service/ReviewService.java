@@ -71,7 +71,7 @@ public class ReviewService {
 
     List<ReviewSummaryResponse> items = rows.stream().map(ReviewSummaryResponse::of).toList();
 
-    return new CursorPage<>(items, nextCursor, hasNext);
+    return new CursorPage<>(nextCursor, hasNext, items);
   }
 
   @Transactional(readOnly = true)
