@@ -13,6 +13,10 @@ public enum ErrorCode {
   INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "C004", "지원하지 않는 파일 형식입니다."),
   FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "C005", "파일 업로드에 실패했습니다."),
 
+  // Encoder
+  UNSUPPORTED_RESULT_TYPE(HttpStatus.BAD_REQUEST, "E001", "지원하지 않는 결과 타입입니다."),
+  INVALID_ENCODED_VALUE(HttpStatus.BAD_REQUEST, "E003", "잘못된 인코딩 값입니다"),
+
   // 사용자 인증 (UserAuth)
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "UA001", "사용자를 찾을 수 없습니다."),
   DUPLICATED_EMAIL(HttpStatus.CONFLICT, "UA002", "이미 등록된 이메일입니다."),
