@@ -86,8 +86,8 @@ jobs:
               "if ! sudo systemctl is-active --quiet \"$APP_NAME\"; then echo 'Service not active right after restart; printing status/journal' >&2; sudo systemctl status \"$APP_NAME\" --no-pager -l || true; sudo journalctl -u \"$APP_NAME\" --no-pager -n 200 || true; fi",
           
               "echo Health check",
-              "sleep 10",
-              "for i in {1..30}; do",
+              "sleep 30",
+              "for i in {1..60}; do",
               "sleep 5", 
               "STATUS=$(curl -s -f http://127.0.0.1:8080/actuator/health | jq -r .status 2>/dev/null || echo 'DOWN')",
               "echo \"STATUS: $STATUS\"", 
