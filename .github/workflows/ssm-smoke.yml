@@ -1,6 +1,11 @@
 name: ssm-smoke
 on:
-  workflow_dispatch: { }
+  workflow_dispatch:
+  push:
+    branches: [ infra/epic ]
+    paths:
+      - '.github/workflows/**'
+      - 'infra/**'
 
 permissions:
   id-token: write
