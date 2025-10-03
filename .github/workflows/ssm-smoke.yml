@@ -1,0 +1,68 @@
+name: ssm-smoke
+on:
+  workflow_dispatch: { }
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}   # 예: ap-northeast-2 (Repository → Settings → Variables에 등록)
+      TAG_APP: readycode
+      TAG_ENV: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}  # readycode-oidc 역할 ARN
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          aws --version
+
+      - name: Send SSM smoke command
+        id: send
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --comment "readycode smoke" \
+            --targets "Key=tag:App,Values=${{ env.TAG_APP }}" "Key=tag:Env,Values=${{ env.TAG_ENV }}" \
+            --parameters 'commands=["echo SMOKE: $(hostname)","date"]' \
+            --region "${{ env.AWS_REGION }}" \
+            --query 'Command.CommandId' --output text)
+          echo "CMD_ID=$CMD_ID"
+          echo "CMD_ID=$CMD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait & Print results
+        run: |
+          CMD_ID="${{ steps.send.outputs.CMD_ID }}"
+          echo "CommandId=$CMD_ID"
+          # 대기 루프
+          for i in {1..20}; do
+            STATUSES=$(aws ssm list-command-invocations \
+              --command-id "$CMD_ID" \
+              --region "${{ env.AWS_REGION }}" \
+              --query 'CommandInvocations[*].Status' \
+              --output text)
+            echo "Statuses: $STATUSES"
+            if [[ "$STATUSES" == *InProgress* || "$STATUSES" == *Pending* ]]; then
+              sleep 3
+            else
+              break
+            fi
+          done
+
+          # 결과 표 출력
+          aws ssm list-command-invocations \
+            --command-id "$CMD_ID" --details \
+            --region "${{ env.AWS_REGION }}" \
+            --query 'CommandInvocations[].[InstanceId,Status,CommandPlugins[0].Output]' \
+            --output table
