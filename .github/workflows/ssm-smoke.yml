@@ -6,7 +6,6 @@ on:
     paths:
       - '.github/workflows/**'
       - 'infra/**'
-
 permissions:
   id-token: write
   contents: read
@@ -15,7 +14,7 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     env:
-      AWS_REGION: ${{ vars.AWS_REGION }}   # 예: ap-northeast-2 (Repository → Settings → Variables에 등록)
+      AWS_REGION: ${{ vars.AWS_REGION }}
       TAG_APP: readycode
       TAG_ENV: prod
     steps:
@@ -24,7 +23,7 @@ jobs:
       - name: Configure AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}  # readycode-oidc 역할 ARN
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Tools
@@ -50,7 +49,6 @@ jobs:
         run: |
           CMD_ID="${{ steps.send.outputs.CMD_ID }}"
           echo "CommandId=$CMD_ID"
-          # 대기 루프
           for i in {1..20}; do
             STATUSES=$(aws ssm list-command-invocations \
               --command-id "$CMD_ID" \
@@ -65,7 +63,6 @@ jobs:
             fi
           done
 
-          # 결과 표 출력
           aws ssm list-command-invocations \
             --command-id "$CMD_ID" --details \
             --region "${{ env.AWS_REGION }}" \
