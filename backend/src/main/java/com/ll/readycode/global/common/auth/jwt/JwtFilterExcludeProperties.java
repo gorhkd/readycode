@@ -6,9 +6,5 @@ public class JwtFilterExcludeProperties {
 
   /** JWT 토큰 체크 제외 목록 */
   public static final List<String> EXCLUDE_URIS =
-      List.of(
-              "/api/auth/**",
-              "/swagger-ui/**",
-              "/v3/api-docs/**"
-      );
+      List.of("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/health/**");
 }
