@@ -3,7 +3,7 @@ name: deploy-frontend
 on:
   workflow_dispatch:
   push:
-    branches: [ infra/epic, main ]
+    branches: [ main ]
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy-frontend.yml'
@@ -32,7 +32,6 @@ jobs:
       - name: Install deps
         run: npm ci
 
-      # 테스트 없으면 이 스텝 삭제해도 됨
       - name: Run tests
         run: npm test -- --watchAll=false || true
 
@@ -74,12 +73,10 @@ jobs:
               "sudo tar -xzf /tmp/frontend.tgz -C \"$REL\"",
               "sudo chmod -R a+rX \"$REL\"",
 
-              "# 심볼릭 링크 스위치 (Nginx root는 /var/www/readycode/current 이어야 함)",
               "sudo ln -sfn \"$REL\" \"$ROOT/current\"",
 
               "sudo nginx -t && sudo systemctl reload nginx",
 
-              "# HTTPS 헬스체크: cert 호스트명 맞추려고 --resolve 사용",
               "for i in {1..30}; do",
               "  CODE=$(curl -s -o /dev/null -w '%{http_code}' --resolve readycode.shop:443:127.0.0.1 https://readycode.shop/healthz || echo 000)",
               "  [ \"$CODE\" = \"200\" ] && echo OK && exit 0 || sleep 2",

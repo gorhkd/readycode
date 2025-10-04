@@ -2,10 +2,9 @@ name: deploy-backend
 on:
   workflow_dispatch:
   push:
-    branches: [ infra/epic, main ]
+    branches: [ main ]
     paths:
       - '.github/workflows/**'
-      - 'infra/**'
       - 'backend/**'
 permissions:
   id-token: write
@@ -118,7 +117,6 @@ jobs:
         id: resolve
         run: |
           set -euo pipefail
-          # 실제로 이 CommandId가 어떤 인스턴스를 대상으로 잡았는지 조회
           for i in {1..12}; do
             JSON=$(aws ssm list-command-invocations \
               --region ap-northeast-2 \
@@ -150,7 +148,6 @@ jobs:
           read -r -a TARGETS <<< "$RAW_TARGETS"
           fi
           
-          # 2) 빈 타깃 방지
           if [[ ${#TARGETS[@]} -eq 0 ]]; then
           echo "::error::No SSM targets resolved."
           exit 1
@@ -158,7 +155,6 @@ jobs:
           
           echo "Waiting for command $CMD_ID on targets: ${TARGETS[*]}"
           
-           # 3) 폴링
           for i in {1..60}; do
           ALL_OK=true
           for T in "${TARGETS[@]}"; do
