@@ -9,7 +9,6 @@ import static org.mockito.BDDMockito.given;
 import com.ll.readycode.api.templates.dto.response.PurchasedTemplateResponse;
 import com.ll.readycode.domain.categories.entity.Category;
 import com.ll.readycode.domain.reviews.reader.ReviewReader;
-
 import com.ll.readycode.domain.templates.purchases.entity.TemplatePurchase;
 import com.ll.readycode.domain.templates.purchases.repository.TemplatePurchaseRepository;
 import com.ll.readycode.domain.templates.purchases.service.TemplatePurchaseService;
@@ -28,7 +27,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 class TemplatePurchaseServiceTest {
 

@@ -9,8 +9,10 @@ import com.ll.readycode.global.common.auth.oauth.service.GoogleOAuthService;
 import com.ll.readycode.global.common.auth.oauth.service.KakaoOAuthService;
 import com.ll.readycode.global.common.auth.oauth.service.NaverOAuthService;
 import com.ll.readycode.global.common.auth.token.RefreshTokenStore;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@ActiveProfiles("test")
 public class OAuthTestHelper {
 
   private static final String kakaoProvider = "kakao";

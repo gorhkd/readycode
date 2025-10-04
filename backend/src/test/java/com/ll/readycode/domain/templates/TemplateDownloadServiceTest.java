@@ -36,8 +36,10 @@ import org.mockito.quality.Strictness;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.unit.DataSize;
 
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TemplateDownloadServiceTest {
