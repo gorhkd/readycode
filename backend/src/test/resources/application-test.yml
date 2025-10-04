@@ -1,0 +1,66 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:readycode-test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+  sql:
+    init:
+      mode: never
+
+server:
+  error:
+    include-message: always
+
+logging:
+  level:
+    com.ll.readycode: DEBUG
+    org.springframework: WARN
+
+custom:
+  jwt:
+    secret-key: 9f2a1c7d5e3b4a69876543210fedcba0aa55bbccddeeff001122334455667788
+    temp-access-token:
+      valid-minute: 3
+    access-token:
+      valid-minute: 15
+    refresh-token:
+      valid-day: 7
+
+  app:
+    upload:
+      base-dir: ${java.io.tmpdir}/readycode-test/uploads
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    redis:
+      enabled: false

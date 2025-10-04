@@ -8,6 +8,9 @@ defaults: { run: { working-directory: backend } }
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul
+      SPRING_PROFILES_ACTIVE: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
