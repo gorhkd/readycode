@@ -3,7 +3,9 @@ name: backend-pr
 on:
   pull_request:
     branches: [ main ]
-
+    paths:
+      - 'backend/**'
+      - '.github/workflows/**'
 defaults:
   run:
     working-directory: backend
