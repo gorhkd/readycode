@@ -11,8 +11,7 @@ defaults:
 
 jobs:
   build:
-    name:
-      frontend: build
+    name: "frontend: build"
     runs-on: ubuntu-latest
     env:
       TZ: Asia/Seoul
