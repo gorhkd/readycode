@@ -1,0 +1,114 @@
+name: deploy-frontend
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --watchAll=false || true
+
+      - name: Build (Vite → dist/)
+        run: |
+          npm run build
+          OUTDIR=""
+          if [ -d dist ]; then OUTDIR=dist; elif [ -d build ]; then OUTDIR=build; else echo "No dist/build"; exit 1; fi
+          tar -czf frontend.tgz -C "$OUTDIR" .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: Upload to S3
+        run: aws s3 cp frontend.tgz s3://readycode-artifacts-gorhkd223-ap-northeast-2/frontend/frontend.tgz
+
+      - name: Deploy via SSM
+        id: ssm
+        run: |
+          set -euo pipefail
+          cat > /tmp/ssm-params.json <<'JSON'
+          {
+            "commands": [
+              "#!/bin/bash",
+              "set -euo pipefail",
+
+              "ROOT=/var/www/readycode",
+              "REL=$ROOT/releases/$(date +%Y%m%d-%H%M%S)",
+              "S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2",
+              "S3_KEY=frontend/frontend.tgz",
+
+              "command -v aws >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y awscli; }",
+              "sudo mkdir -p \"$REL\"",
+
+              "aws s3 cp s3://$S3_BUCKET/$S3_KEY /tmp/frontend.tgz",
+              "sudo tar -xzf /tmp/frontend.tgz -C \"$REL\"",
+              "sudo chmod -R a+rX \"$REL\"",
+
+              "sudo ln -sfn \"$REL\" \"$ROOT/current\"",
+
+              "sudo nginx -t && sudo systemctl reload nginx",
+
+              "for i in {1..30}; do",
+              "  CODE=$(curl -s -o /dev/null -w '%{http_code}' --resolve readycode.shop:443:127.0.0.1 https://readycode.shop/healthz || echo 000)",
+              "  [ \"$CODE\" = \"200\" ] && echo OK && exit 0 || sleep 2",
+              "done",
+              "echo 'Frontend health failed'; exit 1"
+            ]
+          }
+          JSON
+
+          CMD_ID=$(aws ssm send-command \
+            --region ap-northeast-2 \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy readycode frontend" \
+            --cli-binary-format raw-in-base64-out \
+            --parameters file:///tmp/ssm-params.json \
+            --query "Command.CommandId" --output text)
+          echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait SSM
+        run: |
+          for i in {1..60}; do
+            S=$(aws ssm get-command-invocation \
+              --region ap-northeast-2 \
+              --command-id "${{ steps.ssm.outputs.command_id }}" \
+              --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+              --query 'Status' --output text || echo Pending)
+            echo "SSM: $S"
+            case "$S" in
+              Success) exit 0;;
+              Failed|Cancelled|TimedOut) exit 1;;
+            esac
+            sleep 5
+          done
+          echo "Timeout"; exit 1

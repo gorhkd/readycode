@@ -29,8 +29,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@ActiveProfiles("test")
 public class UserProfileServiceTest {
 
   private UserProfileService userProfileService;
@@ -70,7 +72,6 @@ public class UserProfileServiceTest {
 
     TempUserPrincipal tempUserPrincipal =
         TempUserPrincipal.builder().provider(provider).providerId(providerId).email(email).build();
-
 
     Signup signupRequest = new Signup(nickname, phoneNumber, purpose, UserRole.USER);
 

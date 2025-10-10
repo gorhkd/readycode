@@ -1,0 +1,196 @@
+name: deploy-backend
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/**'
+      - 'backend/**'
+permissions:
+  id-token: write
+  contents: read
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build JAR
+        run: ./gradlew clean bootJar
+
+      - name: Prepare artifact name
+        run: |
+          JAR="$(ls build/libs/*-SNAPSHOT*.jar 2>/dev/null || ls build/libs/*.jar | head -n 1)"
+          echo "Found: $JAR"
+          cp "$JAR" build/libs/app.jar
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: Upload to S3
+        run: aws s3 cp build/libs/app.jar s3://readycode-artifacts-gorhkd223-ap-northeast-2/server/app.jar
+
+      - name: Deploy via SSM
+        id: ssm
+        run: |
+          set -euo pipefail
+          cat > /tmp/ssm-params.json <<'JSON'
+          {
+            "commands": [
+              "#!/bin/bash",
+              "set -euo pipefail",
+              "set -x",
+
+              "APP_NAME=readycode",
+              "APP_PATH=/home/ubuntu/app.jar",
+              "S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2",
+              "S3_KEY=server/app.jar",
+
+              "command -v aws >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y awscli; }",
+              "for p in jq curl; do command -v $p >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y $p; }; done",
+
+
+              "echo Backing up old jar",
+              "if [ -f \"$APP_PATH\" ]; then cp \"$APP_PATH\" /home/ubuntu/app-rollback.jar; fi",
+
+              "echo Downloading new jar",
+              "aws s3 cp s3://$S3_BUCKET/$S3_KEY \"$APP_PATH\"",
+              "ls -lh \"$APP_PATH\" || true",
+
+              "echo Restarting service",
+              "sudo systemctl daemon-reload || true",
+              "if ! sudo systemctl restart \"$APP_NAME\"; then sudo systemctl status \"$APP_NAME\" --no-pager -l || true; sudo journalctl -u \"$APP_NAME\" --no-pager -n 200 || true; exit 1; fi",
+
+              "if ! sudo systemctl is-active --quiet \"$APP_NAME\"; then echo 'Service not active right after restart; printing status/journal' >&2; sudo systemctl status \"$APP_NAME\" --no-pager -l || true; sudo journalctl -u \"$APP_NAME\" --no-pager -n 200 || true; fi",
+
+              "echo Health check",
+              "sleep 10",
+              "for i in {1..60}; do",
+              "HTTP=$(curl -s -o /tmp/h.json -w '%{http_code}' http://127.0.0.1:8080/actuator/health/liveness || echo 000)",
+              "if [ \"$HTTP\" = \"200\" ] && jq -e '.status==\"UP\"' </tmp/h.json >/dev/null 2>&1; then",
+              "    echo 'SUCCESS (200 & UP)'; exit 0;",
+              "  fi",
+              "  sleep 2",
+              "done",
+
+              "echo 'FAIL, rollback'",
+              "cp /home/ubuntu/app-rollback.jar \"$APP_PATH\" || true",
+              "sudo systemctl restart \"$APP_NAME\" || true",
+              "exit 1"
+            ]
+          }
+          JSON
+
+          CMD_ID=$(aws ssm send-command \
+            --region ap-northeast-2 \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy readycode app" \
+            --cloud-watch-output-config "CloudWatchOutputEnabled=true" \
+            --output-s3-bucket-name readycode-artifacts-gorhkd223-ap-northeast-2 \
+            --output-s3-key-prefix ssm-logs/readycode \
+            --timeout-seconds 900 \
+            --cli-binary-format raw-in-base64-out \
+            --parameters file:///tmp/ssm-params.json \
+            --query "Command.CommandId" --output text)
+
+          echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve actual targets (debug)
+        id: resolve
+        run: |
+          set -euo pipefail
+          for i in {1..12}; do
+            JSON=$(aws ssm list-command-invocations \
+              --region ap-northeast-2 \
+              --command-id "${{ steps.ssm.outputs.command_id }}" \
+              --details \
+              --output json)
+            TARGETS=$(echo "$JSON" | jq -r '.CommandInvocations[].InstanceId')
+            echo "Command targets so far: $TARGETS"
+            if [ -n "$TARGETS" ]; then
+              echo "targets=$TARGETS" >> $GITHUB_OUTPUT
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${TARGETS:-}" ]; then
+            echo "No targets resolved for the command. Likely wrong InstanceId/region or IAM policy scoping."
+            exit 1
+          fi
+
+      - name: Wait SSM result (robust)
+        run: |
+          set -euo pipefail
+          
+          CMD_ID="${{ steps.ssm.outputs.command_id }}"
+          RAW_TARGETS='${{ steps.resolve.outputs.targets }}'
+          if [[ "$RAW_TARGETS" == \[*\] ]]; then
+          mapfile -t TARGETS < <(printf '%s' "$RAW_TARGETS" | jq -r '.[]')
+          else
+          read -r -a TARGETS <<< "$RAW_TARGETS"
+          fi
+          
+          if [[ ${#TARGETS[@]} -eq 0 ]]; then
+          echo "::error::No SSM targets resolved."
+          exit 1
+          fi
+          
+          echo "Waiting for command $CMD_ID on targets: ${TARGETS[*]}"
+          
+          for i in {1..60}; do
+          ALL_OK=true
+          for T in "${TARGETS[@]}"; do
+          STATUS=$(aws ssm get-command-invocation \
+          --region ap-northeast-2 \
+          --command-id "$CMD_ID" \
+          --instance-id "$T" \
+          --query 'Status' --output text 2>/dev/null || echo "InvocationDoesNotExist")
+          
+          echo "[$T] $STATUS"
+          
+          case "$STATUS" in
+          Success)
+           : # OK
+           ;;
+          Failed|Cancelled|TimedOut|Cancelling)
+            echo "::group::SSM failure details for $T"
+            aws ssm get-command-invocation \
+              --region ap-northeast-2 \
+              --command-id "$CMD_ID" \
+              --instance-id "$T" \
+              --query '{Status:Status,Code:ResponseCode,Details:StatusDetails,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
+              --output text || true
+             echo "::endgroup::"
+             echo "::error::SSM invocation failed on $T with status=$STATUS"
+             exit 1
+             ;;
+           InvocationDoesNotExist|Pending|InProgress|Delayed|*)
+           ALL_OK=false
+           ;;
+           esac
+           done
+          
+           $ALL_OK && { echo "All targets succeeded."; exit 0; }
+           sleep 5
+           done
+          
+           echo "::error::Timed out waiting SSM (300s)."
+           exit 1

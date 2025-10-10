@@ -30,17 +30,18 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
     http.cors(Customizer.withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
-        .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
                 auth
-                    /* 인증 없어도 되는 API */
-                    // Swagger
+                    // 1) 공개 엔드포인트 (헬스/핑)
+                    .requestMatchers("/actuator/health", "/actuator/health/**", "/ping")
+                    .permitAll()
+
+                    // 2) Swagger (운영에서는 닫을 수 있음)
                     .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-resources/**",
@@ -48,41 +49,46 @@ public class SecurityConfig {
                         "/webjars/**",
                         "/swagger/**")
                     .permitAll()
-                    // H2
-                    .requestMatchers("/h2-console/**").permitAll()
-                    // 인증 API
-                    .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/auth/reissue").permitAll()
-                    // 템플릿 API
-                    .requestMatchers(HttpMethod.GET, "/api/templates").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/templates/*").permitAll()
-                    // 카테고리 API
-                    .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
-                    // 리뷰 API
-                    .requestMatchers(HttpMethod.GET, "/api/reviews/*").permitAll()
 
-                    /* 인증 필요한 API */
-                    // 관리자 권한 API
-                    .requestMatchers("/api/admin/**").hasRole(UserRole.ADMIN.name())
-                    // 템플릿 API
-                    .requestMatchers(HttpMethod.POST, "/api/templates").hasRole(UserRole.ADMIN.name())
-                    .requestMatchers(HttpMethod.PATCH, "/api/templates/*").hasRole(UserRole.ADMIN.name())
-                    .requestMatchers(HttpMethod.DELETE, "/api/templates/*").hasRole(UserRole.ADMIN.name())
-                    // 카테고리 API
-                    .requestMatchers(HttpMethod.POST, "/api/categories").hasRole(UserRole.ADMIN.name())
-                    .requestMatchers(HttpMethod.PATCH, "/api/categories/*").hasRole(UserRole.ADMIN.name())
-                    .requestMatchers(HttpMethod.DELETE, "/api/categories/*").hasRole(UserRole.ADMIN.name())
+                    // 3) H2 콘솔 (운영 비권장)
+                    .requestMatchers("/h2-console/**")
+                    .permitAll()
 
-                    // 그 외 API
-                    .anyRequest().authenticated())
+                    // 4) 인증(로그인/재발급)
+                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/reissue")
+                    .permitAll()
 
+                    // 5) 공개 조회 API
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/templates",
+                        "/api/templates/*",
+                        "/api/categories",
+                        "/api/reviews/*")
+                    .permitAll()
+
+                    // 6) 관리자 권한이 필요한 API
+                    .requestMatchers("/api/admin/**")
+                    .hasRole(UserRole.ADMIN.name())
+                    .requestMatchers(HttpMethod.POST, "/api/templates")
+                    .hasRole(UserRole.ADMIN.name())
+                    .requestMatchers(HttpMethod.PATCH, "/api/templates/*")
+                    .hasRole(UserRole.ADMIN.name())
+                    .requestMatchers(HttpMethod.DELETE, "/api/templates/*")
+                    .hasRole(UserRole.ADMIN.name())
+                    .requestMatchers(HttpMethod.POST, "/api/categories")
+                    .hasRole(UserRole.ADMIN.name())
+                    .requestMatchers(HttpMethod.PATCH, "/api/categories/*")
+                    .hasRole(UserRole.ADMIN.name())
+                    .requestMatchers(HttpMethod.DELETE, "/api/categories/*")
+                    .hasRole(UserRole.ADMIN.name())
+
+                    // 7) 그 외 전부 인증 필요 — 항상 맨 마지막!
+                    .anyRequest()
+                    .authenticated())
         .exceptionHandling(
-            exception ->
-                exception
-                    /* 예외 처리 Handler */
-                    // 인증 실패 했을 경우
-                    .authenticationEntryPoint(customAuthenticationEntryPoint)
-                    // 접근 권한이 없는 경우
+            ex ->
+                ex.authenticationEntryPoint(customAuthenticationEntryPoint)
                     .accessDeniedHandler(customAccessDeniedHandler))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
