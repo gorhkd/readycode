@@ -15,7 +15,7 @@ public enum ErrorCode {
 
   // Encoder
   UNSUPPORTED_RESULT_TYPE(HttpStatus.BAD_REQUEST, "E001", "지원하지 않는 결과 타입입니다."),
-  INVALID_ENCODED_VALUE(HttpStatus.BAD_REQUEST, "E003", "잘못된 인코딩 값입니다"),
+  INVALID_ENCODED_VALUE(HttpStatus.BAD_REQUEST, "E002", "잘못된 인코딩 값입니다"),
 
   // 사용자 인증 (UserAuth)
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "UA001", "사용자를 찾을 수 없습니다."),
