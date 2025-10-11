@@ -1,5 +1,6 @@
 package com.ll.readycode.domain.templates.templates.repository;
 
+import com.ll.readycode.domain.admin.entity.AdminSortType;
 import com.ll.readycode.domain.templates.query.TemplateSortType;
 import com.ll.readycode.domain.templates.templates.entity.QTemplate;
 import com.ll.readycode.domain.templates.templates.entity.Template;
@@ -110,6 +111,62 @@ public class TemplateRepositoryImpl implements TemplateRepositoryCustom {
               : new OrderSpecifier<?>[] {t.purchaseCount.asc(), t.createdAt.asc(), t.id.asc()};
       case LATEST ->
           desc
+              ? new OrderSpecifier<?>[] {t.createdAt.desc(), t.id.desc()}
+              : new OrderSpecifier<?>[] {t.createdAt.asc(), t.id.asc()};
+    };
+  }
+
+  @Override
+  public List<Template> findTemplateStatisticsWithCursor(
+      int limit, Long cursor, AdminSortType sortType, OrderType orderType) {
+
+    QTemplate template = QTemplate.template;
+
+    return queryFactory
+        .selectFrom(template)
+        .where(buildAdminConditions(template, cursor, orderType))
+        .orderBy(buildAdminOrders(template, sortType, orderType))
+        .limit(limit)
+        .fetch();
+  }
+
+  private BooleanBuilder buildAdminConditions(
+      QTemplate template, Long cursor, OrderType orderType) {
+
+    BooleanBuilder builder = new BooleanBuilder();
+
+    // 커서 조건 추가 (templateId 기준)
+    if (cursor != null) {
+      if (orderType == OrderType.DESC) {
+        builder.and(template.id.lt(cursor));
+      } else {
+        builder.and(template.id.gt(cursor));
+      }
+    }
+
+    return builder;
+  }
+
+  private OrderSpecifier<?>[] buildAdminOrders(
+      QTemplate t, AdminSortType sortType, OrderType orderType) {
+
+    boolean isDesc = (orderType == OrderType.DESC);
+
+    return switch (sortType) {
+      case DOWNLOAD ->
+          isDesc
+              ? new OrderSpecifier<?>[] {t.purchaseCount.desc(), t.id.desc()}
+              : new OrderSpecifier<?>[] {t.purchaseCount.asc(), t.id.asc()};
+      case LIKE ->
+          isDesc
+              ? new OrderSpecifier<?>[] {t.ratingSum.desc(), t.id.desc()}
+              : new OrderSpecifier<?>[] {t.ratingSum.asc(), t.id.asc()};
+      case REVIEW ->
+          isDesc
+              ? new OrderSpecifier<?>[] {t.reviewCount.desc(), t.id.desc()}
+              : new OrderSpecifier<?>[] {t.reviewCount.asc(), t.id.asc()};
+      case CREATED ->
+          isDesc
               ? new OrderSpecifier<?>[] {t.createdAt.desc(), t.id.desc()}
               : new OrderSpecifier<?>[] {t.createdAt.asc(), t.id.asc()};
     };

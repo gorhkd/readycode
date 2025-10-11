@@ -1,9 +1,13 @@
 package com.ll.readycode.domain.admin.service;
 
 import com.ll.readycode.api.admin.dto.response.AdminResponseDto.SocialDetails;
+import com.ll.readycode.api.admin.dto.response.AdminResponseDto.TemplateDetails;
 import com.ll.readycode.api.admin.dto.response.AdminResponseDto.TemplateDownloadDetails;
 import com.ll.readycode.api.admin.dto.response.AdminResponseDto.UserProfileDetails;
+import com.ll.readycode.domain.admin.entity.AdminSortType;
 import com.ll.readycode.domain.templates.downloads.repository.TemplateDownloadRepository;
+import com.ll.readycode.domain.templates.templates.entity.Template;
+import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.domain.users.userprofiles.entity.UserRole;
 import com.ll.readycode.domain.users.userprofiles.repository.UserProfileRepository;
@@ -23,6 +27,7 @@ public class AdminService {
 
   private final UserProfileRepository userProfileRepository;
   private final TemplateDownloadRepository templateDownloadRepository;
+  private final TemplateRepository templateRepository;
 
   @Transactional(readOnly = true)
   public CursorPage<UserProfileDetails> getUserProfilesWithSocialInfo(
@@ -63,5 +68,33 @@ public class AdminService {
       LocalDateTime startDate, LocalDateTime endDate, Long templateId) {
     return templateDownloadRepository.findTemplatesForDownloadStatistics(
         startDate, endDate, templateId);
+  }
+
+  @Transactional(readOnly = true)
+  public CursorPage<TemplateDetails> getTemplateStatistics(
+      Integer limit, String cursorStr, String sortByStr, String sortOrderStr) {
+
+    int pageSize = PaginationPolicy.clamp(limit);
+    Long cursor = (Long) EncodeHelper.decode(cursorStr, EncodeHelper.ENCODING_TYPE_LONG);
+    AdminSortType sortBy = AdminSortType.from(sortByStr);
+    OrderType sortOrder = OrderType.from(sortOrderStr);
+
+    // 다음 페이지 존재 여부 확인을 위해 +1개 조회
+    List<Template> templates =
+        templateRepository.findTemplateStatisticsWithCursor(
+            pageSize + 1, cursor, sortBy, sortOrder);
+
+    // 다음 페이지 존재 여부 확인
+    boolean hasNext = templates.size() > pageSize;
+    if (hasNext) templates = templates.subList(0, pageSize);
+
+    // 다음 커서 생성
+    String nextCursor =
+        hasNext ? EncodeHelper.encode(templates.get(templates.size() - 1).getId()) : null;
+
+    // Template -> TemplateDetails 변환
+    List<TemplateDetails> items = templates.stream().map(TemplateDetails::of).toList();
+
+    return new CursorPage<>(nextCursor, hasNext, items);
   }
 }

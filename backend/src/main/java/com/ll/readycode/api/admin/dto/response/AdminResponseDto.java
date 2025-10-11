@@ -1,5 +1,6 @@
 package com.ll.readycode.api.admin.dto.response;
 
+import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.users.userauths.entity.UserAuth;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import com.ll.readycode.global.common.util.EncodeHelper;
@@ -53,4 +54,24 @@ public class AdminResponseDto {
       @Schema(description = "템플릿 ID", example = "1") Long templateId,
       @Schema(description = "템플릿 제목", example = "스프링 시큐리티 JWT 템플릿") String templateTitle,
       @Schema(description = "다운로드 수", example = "123") Long downloadCount) {}
+
+  @Schema(description = "템플릿 톰계 조회 응답 DTO")
+  @Builder
+  public record TemplateDetails(
+      @Schema(description = "템플릿 ID", example = "T1") String templateId,
+      @Schema(description = "템플릿 제목", example = "스프링 시큐리티 JWT 템플릿") String templateTitle,
+      @Schema(description = "다운로드 수", example = "133") Long downloadCount,
+      @Schema(description = "좋아요 수", example = "10") Long likeCount,
+      @Schema(description = "리뷰 수", example = "5") Long reviewCount) {
+
+    public static TemplateDetails of(Template template) {
+      return TemplateDetails.builder()
+          .templateId(EncodeHelper.encode(template.getId()))
+          .templateTitle(template.getTitle())
+          .downloadCount(template.getPurchaseCount())
+          .likeCount(template.getRatingSum())
+          .reviewCount(template.getReviewCount())
+          .build();
+    }
+  }
 }
