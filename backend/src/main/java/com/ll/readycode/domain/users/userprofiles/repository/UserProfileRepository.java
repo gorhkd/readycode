@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserProfileRepository
     extends JpaRepository<UserProfile, Long>, UserProfileRepositoryCustom {
+
   Optional<UserProfile> findByNickname(String nickname);
 }

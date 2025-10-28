@@ -14,7 +14,7 @@ public enum OrderType {
   public static OrderType from(String value) {
     try {
       return OrderType.valueOf(value.toUpperCase());
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | NullPointerException e) {
       return DESC; // 기본값
     }
   }
