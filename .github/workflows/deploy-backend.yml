@@ -60,7 +60,7 @@ jobs:
 
               "APP_NAME=readycode",
               "APP_PATH=/home/ubuntu/app.jar",
-              "S3_BUCKET=readycode-artifacts-gorhkd223-ap-northeast-2",
+              "S3_BUCKET=readycode-tfstate-bucket-ap-northeast-2",
               "S3_KEY=server/app.jar",
 
               "command -v aws >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y awscli; }",
