@@ -54,59 +54,59 @@ jobs:
           cat > /tmp/ssm-params.json <<'JSON'
           {
             "commands": [
-              "#!/bin/bash",
+              "set -e",
+
+              "cat > /tmp/deploy-readycode.sh <<'EOS'",
+              "#!/usr/bin/env bash",
               "set -euo pipefail",
 
               "APP_NAME=readycode",
-              "APP_DIR=/opt/$APP_NAME",
-              "APP_PATH=$APP_DIR/app.jar",
+              "APP_DIR=/opt/${APP_NAME}",
+              "APP_PATH=${APP_DIR}/app.jar",
               "S3_BUCKET=readycode-tfstate-bucket",
               "S3_KEY=artifacts/app.jar",
-          
-              "sudo mkdir -p \"$APP_DIR\"",
-              "sudo chown -R ubuntu:ubuntu \"$APP_DIR\"",
+              "ROLLBACK=/opt/readycode/app-rollback.jar",
 
-              "command -v aws >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y awscli; }",
-              "for p in jq curl; do command -v $p >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y $p; }; done",
+              "command -v aws >/dev/null 2>&1 || { apt-get update -y && apt-get install -y awscli; }",
+              "command -v curl >/dev/null 2>&1 || { apt-get update -y && apt-get install -y curl; }",
 
-
-
-              "echo Sync env from SSM Parameter Store",
+              "echo 'Sync env from SSM Parameter Store'",
               "sudo /usr/local/bin/readycode-sync-env",
 
+              "echo 'Backing up old jar'",
+              "if [ -f \"$APP_PATH\" ]; then sudo cp \"$APP_PATH\" \"$ROLLBACK\"; fi",
 
-
-              "echo Backing up old jar",
-              "if [ -f \"$APP_PATH\" ]; then cp \"$APP_PATH\" /opt/readycode/app-rollback.jar; fi",
-
-              "echo Downloading new jar",
+              "echo 'Downloading new jar'",
+              "sudo mkdir -p \"$APP_DIR\"",
               "TMP_JAR=${APP_PATH}.tmp",
-              "aws s3 cp s3://$S3_BUCKET/$S3_KEY \"$TMP_JAR\"",
-              "mv \"$TMP_JAR\" \"$APP_PATH\"",
+              "aws s3 cp s3://${S3_BUCKET}/${S3_KEY} \"$TMP_JAR\"",
+              "sudo mv \"$TMP_JAR\" \"$APP_PATH\"",
+              "sudo chmod 644 \"$APP_PATH\" || true",
               "ls -lh \"$APP_PATH\" || true",
 
-              "echo Restarting service",
+              "echo 'Restarting service'",
               "sudo systemctl daemon-reload || true",
-              "if ! sudo systemctl restart \"$APP_NAME\"; then sudo systemctl status \"$APP_NAME\" --no-pager -l || true; sudo journalctl -u \"$APP_NAME\" --no-pager -n 200 || true; exit 1; fi",
+              "sudo systemctl restart \"$APP_NAME\"",
+              "sleep 10",
 
-              "if ! sudo systemctl is-active --quiet \"$APP_NAME\"; then echo 'Service not active right after restart; printing status/journal' >&2; sudo systemctl status \"$APP_NAME\" --no-pager -l || true; sudo journalctl -u \"$APP_NAME\" --no-pager -n 200 || true; fi",
-
-              "echo Health check (wait until UP)",
-              "for i in {1..45}; do",
-              "  # prefer readiness endpoint if available",
-              "  if curl -fsS http://127.0.0.1:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"' 2>/dev/null; then",
-              "    echo 'SUCCESS (readiness UP)'; exit 0;",
-              "  fi",
-              "  if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '\"status\":\"UP\"' 2>/dev/null; then",
-              "    echo 'SUCCESS (health UP)'; exit 0;",
+              "echo 'Health check'",
+              "for i in $(seq 1 60); do",
+              "  HTTP=$(curl -s -o /tmp/h.json -w '%{http_code}' http://127.0.0.1:8080/actuator/health || echo 000)",
+              "  if [ \"$HTTP\" = \"200\" ] && grep -q '\"status\":\"UP\"' /tmp/h.json; then",
+              "    echo 'SUCCESS (200 & UP)'; exit 0;",
               "  fi",
               "  sleep 2",
               "done",
 
               "echo 'FAIL, rollback'",
-              "cp /opt/readycode/app-rollback.jar \"$APP_PATH\" || true",
-              "sudo systemctl restart \"$APP_NAME\" || true",
-              "exit 1"
+              "if [ -f \"$ROLLBACK\" ]; then",
+              "  sudo cp \"$ROLLBACK\" \"$APP_PATH\" || true",
+              "  sudo systemctl restart \"$APP_NAME\" || true",
+              "fi",
+              "exit 1",
+              "EOS",
+
+              "bash /tmp/deploy-readycode.sh"
             ]
           }
           JSON
@@ -116,10 +116,6 @@ jobs:
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
-            --cloud-watch-output-config "CloudWatchOutputEnabled=true" \
-            --output-s3-bucket-name readycode-tfstate-bucket \
-            --output-s3-key-prefix ssm-logs/readycode \
-            --timeout-seconds 900 \
             --cli-binary-format raw-in-base64-out \
             --parameters file:///tmp/ssm-params.json \
             --query "Command.CommandId" --output text)
