@@ -45,7 +45,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp build/libs/app.jar s3://readycode-tfstate-bucket/server/app.jar
+        run: aws s3 cp build/libs/app.jar s3://readycode-tfstate-bucket/artifacts/app.jar
 
       - name: Deploy via SSM
         id: ssm
@@ -61,7 +61,7 @@ jobs:
               "APP_DIR=/opt/$APP_NAME",
               "APP_PATH=$APP_DIR/app.jar",
               "S3_BUCKET=readycode-tfstate-bucket",
-              "S3_KEY=server/app.jar",
+              "S3_KEY=artifacts/app.jar",
           
               "sudo mkdir -p \"$APP_DIR\"",
               "sudo chown -R ubuntu:ubuntu \"$APP_DIR\"",
