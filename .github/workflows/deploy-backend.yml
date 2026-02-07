@@ -45,7 +45,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Upload to S3
-        run: aws s3 cp build/libs/app.jar s3://readycode-artifacts-gorhkd223-ap-northeast-2/server/app.jar
+        run: aws s3 cp build/libs/app.jar s3://readycode-tfstate-bucket-ap-northeast-2/server/app.jar
 
       - name: Deploy via SSM
         id: ssm
@@ -56,22 +56,33 @@ jobs:
             "commands": [
               "#!/bin/bash",
               "set -euo pipefail",
-              "set -x",
 
               "APP_NAME=readycode",
-              "APP_PATH=/home/ubuntu/app.jar",
+              "APP_DIR=/opt/$APP_NAME",
+              "APP_PATH=$APP_DIR/app.jar",
               "S3_BUCKET=readycode-tfstate-bucket-ap-northeast-2",
               "S3_KEY=server/app.jar",
+          
+              "sudo mkdir -p \"$APP_DIR\"",
+              "sudo chown -R ubuntu:ubuntu \"$APP_DIR\"",
 
               "command -v aws >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y awscli; }",
               "for p in jq curl; do command -v $p >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y $p; }; done",
 
 
+
+              "echo Sync env from SSM Parameter Store",
+              "sudo /usr/local/bin/readycode-sync-env",
+
+
+
               "echo Backing up old jar",
-              "if [ -f \"$APP_PATH\" ]; then cp \"$APP_PATH\" /home/ubuntu/app-rollback.jar; fi",
+              "if [ -f \"$APP_PATH\" ]; then cp \"$APP_PATH\" /opt/readycode/app-rollback.jar; fi",
 
               "echo Downloading new jar",
-              "aws s3 cp s3://$S3_BUCKET/$S3_KEY \"$APP_PATH\"",
+              "TMP_JAR=${APP_PATH}.tmp",
+              "aws s3 cp s3://$S3_BUCKET/$S3_KEY \"$TMP_JAR\"",
+              "mv \"$TMP_JAR\" \"$APP_PATH\"",
               "ls -lh \"$APP_PATH\" || true",
 
               "echo Restarting service",
@@ -83,7 +94,7 @@ jobs:
               "echo Health check",
               "sleep 10",
               "for i in {1..60}; do",
-              "HTTP=$(curl -s -o /tmp/h.json -w '%{http_code}' http://127.0.0.1:8080/actuator/health/liveness || echo 000)",
+              "HTTP=$(curl -s -o /tmp/h.json -w '%{http_code}' http://127.0.0.1:8080/actuator/health || echo 000)",
               "if [ \"$HTTP\" = \"200\" ] && jq -e '.status==\"UP\"' </tmp/h.json >/dev/null 2>&1; then",
               "    echo 'SUCCESS (200 & UP)'; exit 0;",
               "  fi",
@@ -91,7 +102,7 @@ jobs:
               "done",
 
               "echo 'FAIL, rollback'",
-              "cp /home/ubuntu/app-rollback.jar \"$APP_PATH\" || true",
+              "cp /opt/readycode/app-rollback.jar \"$APP_PATH\" || true",
               "sudo systemctl restart \"$APP_NAME\" || true",
               "exit 1"
             ]
