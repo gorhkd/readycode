@@ -1,0 +1,407 @@
+#!/bin/bash
+
+set -euo pipefail
+# user_data_version=${user_data_version}
+# (위 라인은 Terraform이 user_data 변경을 감지/강제 replace 하도록 남겨둠)
+
+exec > >(tee -a /var/log/user-data.log) 2>&1
+
+APP_NAME="${project_name}"
+AWS_REGION="${aws_region}"
+SSM_PREFIX="${ssm_prefix}"
+
+ARTIFACT_BUCKET="${artifact_bucket}"
+ARTIFACT_PREFIX="${artifact_prefix}"
+
+APP_USER="ubuntu"
+APP_DIR="/opt/$APP_NAME"
+ENV_FILE="/etc/$APP_NAME.env"
+SERVICE_FILE="/etc/systemd/system/$APP_NAME.service"
+
+echo "[1] packages"
+apt-get update -y
+apt-get install -y curl wget unzip gnupg ca-certificates nginx mysql-client awscli redis-server certbot python3-certbot-nginx
+
+echo "[2] Java 17 (Corretto)"
+wget -O- https://apt.corretto.aws/corretto.key | gpg --dearmor | tee /usr/share/keyrings/corretto-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/corretto-archive-keyring.gpg] https://apt.corretto.aws stable main" \
+  | tee /etc/apt/sources.list.d/corretto.list >/dev/null
+apt-get update -y
+apt-get install -y java-17-amazon-corretto-jdk
+java -version
+
+echo "[3] SSM agent"
+snap install amazon-ssm-agent --classic
+systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
+systemctl restart snap.amazon-ssm-agent.amazon-ssm-agent.service
+
+echo "[4] redis (local only)"
+systemctl enable redis-server
+systemctl restart redis-server
+
+echo "[5] app dir"
+mkdir -p "$APP_DIR"
+chown -R "$APP_USER:$APP_USER" "$APP_DIR"
+
+echo "[5.5] create upload directory"
+mkdir -p /var/lib/readycode/uploads
+chown -R "$APP_USER:$APP_USER" /var/lib/readycode
+
+echo "[5.6] write Spring prod config (external yml)"
+mkdir -p "$APP_DIR/config"
+
+cat > "$APP_DIR/config/application-prod.yml" <<'YAML'
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  data:
+    redis:
+      host: $${SPRING_DATA_REDIS_HOST}
+      port: $${SPRING_DATA_REDIS_PORT:6379}
+
+  datasource:
+    url: $${SPRING_DATASOURCE_URL}
+    username: $${SPRING_DATASOURCE_USERNAME}
+    password: $${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      auto-commit: false
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: $${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: $${HIBERNATE_FORMAT_SQL:false}
+        highlight_sql: $${HIBERNATE_HIGHLIGHT_SQL:false}
+        use_sql_comments: $${HIBERNATE_USE_SQL_COMMENTS:false}
+        dialect: org.hibernate.dialect.MySQL8Dialect
+      javax:
+        persistence:
+          lock:
+            timeout: 3000
+
+server:
+  port: $${SERVER_PORT:8080}
+  error:
+    include-message: $${SERVER_ERROR_INCLUDE_MESSAGE:never}
+
+logging:
+  level:
+    org.springframework.security: $${LOG_SECURITY_LEVEL:INFO}
+    com.l.R: $${LOG_APP_LEVEL:INFO}
+
+custom:
+  jwt:
+    secret-key: $${JWT_SECRET_KEY}
+    temp-access-token:
+      valid-minute: $${JWT_TEMP_MIN:3}
+    access-token:
+      valid-minute: $${JWT_ACCESS_MIN:15}
+    refresh-token:
+      valid-day: $${JWT_REFRESH_DAY:7}
+
+  oauth:
+    kakao:
+      client-id: $${OAUTH_KAKAO_CLIENT_ID}
+      client-secret: $${OAUTH_KAKAO_CLIENT_SECRET}
+      redirect-uri: $${OAUTH_KAKAO_REDIRECT_URI}
+      token-uri: https://kauth.kakao.com/oauth/token
+      user-info-uri: https://kapi.kakao.com/v2/user/me
+
+    google:
+      client-id: $${OAUTH_GOOGLE_CLIENT_ID}
+      client-secret: $${OAUTH_GOOGLE_CLIENT_SECRET}
+      redirect-uri: $${OAUTH_GOOGLE_REDIRECT_URI}
+      token-uri: https://oauth2.googleapis.com/token
+      user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
+    naver:
+      client-id: $${OAUTH_NAVER_CLIENT_ID}
+      client-secret: $${OAUTH_NAVER_CLIENT_SECRET}
+      redirect-uri: $${OAUTH_NAVER_REDIRECT_URI}
+      token-uri: https://nid.naver.com/oauth2.0/token
+      user-info-uri: https://openapi.naver.com/v1/nid/me
+
+  app:
+    upload:
+      base-dir: $${UPLOAD_BASE_DIR:/var/lib/readycode/uploads}
+
+  template:
+    file:
+      base-dir: $${TEMPLATE_BASE_DIR:templates}
+      max-size: $${TEMPLATE_MAX_SIZE:10MB}
+      allowed-extensions: $${TEMPLATE_ALLOWED_EXTENSIONS:zip,rar,txt,java,pdf}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: $${MANAGEMENT_EXPOSE:health,info}
+  endpoint:
+    health:
+      show-details: $${MANAGEMENT_HEALTH_DETAILS:never}
+      probes:
+        enabled: true
+  health:
+    redis:
+      enabled: $${MANAGEMENT_HEALTH_REDIS_ENABLED:true}
+YAML
+
+chown -R "$APP_USER:$APP_USER" "$APP_DIR/config"
+chmod 755 "$APP_DIR/config"
+chmod 644 "$APP_DIR/config/application-prod.yml"
+
+echo "[6] create env sync script (from SSM -> $ENV_FILE)"
+cat > /usr/local/bin/readycode-sync-env <<'SYNC'
+#!/bin/bash
+set -euo pipefail
+
+APP_NAME="__APP_NAME__"
+AWS_REGION="__AWS_REGION__"
+SSM_PREFIX="__SSM_PREFIX__"
+
+ENV_FILE="/etc/$APP_NAME.env"
+
+# 고정값 (로컬 Redis)
+STATIC_ENV=$(cat <<EOF
+SPRING_PROFILES_ACTIVE=prod
+SERVER_PORT=8080
+SPRING_DATA_REDIS_HOST=127.0.0.1
+SPRING_DATA_REDIS_PORT=6379
+UPLOAD_BASE_DIR=/var/lib/readycode/uploads
+EOF
+)
+
+umask 077
+tmp="$(mktemp)"
+
+echo "$STATIC_ENV" > "$tmp"
+
+# 비밀값 fetch 구간은 xtrace 끔 (혹시 set -x 켜도 안 새게)
+set +x
+
+PARAM_COUNT=$(aws ssm get-parameters-by-path \
+  --region "$AWS_REGION" \
+  --path "$SSM_PREFIX" \
+  --query 'length(Parameters)' \
+  --output text 2>/dev/null || echo "0")
+
+if [ "$PARAM_COUNT" = "0" ]; then
+  echo "Warning: No SSM parameters found at $SSM_PREFIX" >&2
+fi
+
+aws ssm get-parameters-by-path \
+  --region "$AWS_REGION" \
+  --path "$SSM_PREFIX" \
+  --with-decryption \
+  --recursive \
+  --query "Parameters[*].[Name,Value]" \
+  --output text \
+| awk -F'\t' '{n=$1; sub(".*/","",n); print n"="$2}' >> "$tmp"
+
+install -m 600 -o root -g root "$tmp" "$ENV_FILE"
+rm -f "$tmp"
+echo "Wrote $ENV_FILE from $SSM_PREFIX"
+SYNC
+
+# placeholder 치환(여긴 bash가 아니라 user_data 실행 시점)
+sed -i "s|__APP_NAME__|$APP_NAME|g" /usr/local/bin/readycode-sync-env
+sed -i "s|__AWS_REGION__|$AWS_REGION|g" /usr/local/bin/readycode-sync-env
+sed -i "s|__SSM_PREFIX__|$SSM_PREFIX|g" /usr/local/bin/readycode-sync-env
+
+chmod +x /usr/local/bin/readycode-sync-env
+
+echo "[7] systemd service (env는 $ENV_FILE 사용)"
+cat > "$SERVICE_FILE" <<EOF
+[Unit]
+Description=$APP_NAME Spring Boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=$APP_USER
+WorkingDirectory=$APP_DIR
+EnvironmentFile=$ENV_FILE
+ExecStart=/usr/bin/java -jar $APP_DIR/app.jar --spring.config.additional-location=file:$APP_DIR/config/
+Restart=always
+RestartSec=3
+SuccessExitStatus=143
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable "$APP_NAME.service"
+
+echo "[8] nginx (frontend static + /api proxy + https + redirect)"
+
+DOMAIN="readycode.shop"
+
+FRONT_ROOT="/var/www/readycode"
+FRONT_CURRENT="$FRONT_ROOT/current"
+WEBROOT="/var/www/certbot"
+CERTBOT_EMAIL="gorhkd223@gmail.com"
+
+mkdir -p "$FRONT_CURRENT" "$WEBROOT"
+
+chown -R www-data:www-data "$FRONT_ROOT" "$WEBROOT" || true
+chmod -R 755 "$FRONT_ROOT" "$WEBROOT" || true
+
+# (1) HTTP 설정: ACME 경로 열고, /api 프록시, 프론트 서빙(리다이렉트는 아직 X)
+cat > /etc/nginx/sites-available/$APP_NAME <<NGINX
+server {
+  listen 80;
+  server_name $DOMAIN;
+
+  location = /healthz {
+    default_type text/plain;
+    return 200 'ok';
+  }
+
+  location ^~ /.well-known/acme-challenge/ {
+    root $WEBROOT;
+    default_type "text/plain";
+    try_files \$uri =404;
+  }
+
+  location ^~ /api/ {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+
+    proxy_http_version 1.1;
+    proxy_connect_timeout 5s;
+    proxy_send_timeout 5s;
+    proxy_read_timeout 60s;
+    client_max_body_size 50M;
+  }
+
+  root $FRONT_CURRENT;
+  index index.html;
+
+  location ^~ /assets/ {
+    try_files \$uri =404;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  location / {
+    try_files \$uri \$uri/ /index.html;
+  }
+}
+NGINX
+
+rm -f /etc/nginx/sites-enabled/default || true
+ln -sf /etc/nginx/sites-available/$APP_NAME /etc/nginx/sites-enabled/$APP_NAME
+
+nginx -t
+systemctl restart nginx
+
+echo "Waiting for nginx to be ready..."
+sleep 5
+
+# (1.5) cert issue: nginx가 80에서 ACME를 서빙하는 상태에서 실행해야 성공함
+set +e
+certbot certonly --webroot -w "$WEBROOT" \
+  -d "$DOMAIN" \
+  -m "$CERTBOT_EMAIL" --agree-tos --non-interactive
+CERT_RC=$?
+set -e
+
+echo "certbot rc=$CERT_RC"
+ls -al "/etc/letsencrypt/live/$DOMAIN" 2>/dev/null || true
+
+# (2) 인증서 있으면 HTTPS 설정으로 교체 + HTTP->HTTPS redirect 적용
+CERT_FULL="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+CERT_KEY="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+
+if [ -f "$CERT_FULL" ] && [ -f "$CERT_KEY" ]; then
+  echo "[8-1] cert exists -> enable https + redirect"
+
+  cat > /etc/nginx/sites-available/$APP_NAME <<NGINX
+server {
+  listen 80;
+  server_name $DOMAIN;
+
+  location ^~ /.well-known/acme-challenge/ {
+    root $WEBROOT;
+    default_type "text/plain";
+    try_files \$uri =404;
+  }
+
+  location = /healthz {
+    default_type text/plain;
+    return 200 'ok';
+  }
+
+  location / {
+    return 301 https://\$host\$request_uri;
+  }
+}
+
+server {
+  listen 443 ssl http2;
+  server_name $DOMAIN;
+
+  ssl_certificate     $CERT_FULL;
+  ssl_certificate_key $CERT_KEY;
+
+  location = /healthz {
+    default_type text/plain;
+    return 200 'ok';
+  }
+
+  location ^~ /api/ {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+
+    proxy_http_version 1.1;
+    proxy_connect_timeout 5s;
+    proxy_send_timeout 5s;
+    proxy_read_timeout 60s;
+    client_max_body_size 50M;
+  }
+
+  root $FRONT_CURRENT;
+  index index.html;
+
+  location ^~ /assets/ {
+    try_files \$uri =404;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  location / {
+    try_files \$uri \$uri/ /index.html;
+  }
+}
+NGINX
+
+  nginx -t
+  systemctl reload nginx
+else
+  echo "[8-1] cert not found -> keep http only (check /var/log/letsencrypt/letsencrypt.log)"
+fi
+
+# (3) renew 후 nginx reload hook
+mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+cat > /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh <<'EOF'
+#!/bin/sh
+systemctl reload nginx
+EOF
+chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+
+echo "[9] try env sync once (non-fatal)"
+/usr/local/bin/readycode-sync-env
+
+echo "Done. (app not started yet)"

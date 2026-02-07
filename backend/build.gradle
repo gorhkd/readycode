@@ -51,9 +51,6 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    // 타임리프
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
     // oauth2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
