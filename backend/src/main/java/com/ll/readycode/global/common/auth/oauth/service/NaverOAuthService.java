@@ -28,7 +28,6 @@ public class NaverOAuthService extends AbstractOAuthService<NaverTokenResponse, 
 
   @Override
   protected NaverTokenResponse getAccessToken(String authCode) {
-
     Provider naver = oAuthProperties.getNaver();
 
     HttpHeaders headers = new HttpHeaders();
@@ -42,7 +41,20 @@ public class NaverOAuthService extends AbstractOAuthService<NaverTokenResponse, 
     body.add("code", authCode);
 
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-    return restTemplate.postForObject(naver.getTokenUri(), request, NaverTokenResponse.class);
+
+    // ✅ ResponseEntity로 받기
+    ResponseEntity<NaverTokenResponse> response =
+        restTemplate.postForEntity(naver.getTokenUri(), request, NaverTokenResponse.class);
+
+    NaverTokenResponse tokenResponse = response.getBody();
+
+    if (tokenResponse == null || tokenResponse.accessToken() == null) {
+      throw new RuntimeException("네이버 토큰 파싱 실패");
+    }
+
+    System.out.println("✅ 토큰 파싱 성공: " + tokenResponse.accessToken().substring(0, 10));
+
+    return tokenResponse;
   }
 
   @Override

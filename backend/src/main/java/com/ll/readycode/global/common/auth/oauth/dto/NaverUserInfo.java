@@ -6,20 +6,42 @@ import lombok.Getter;
 @Getter
 public class NaverUserInfo {
 
-  private String id;
+  private String resultcode;
+  private String message;
+  private Response response;
 
-  private String email;
+  @Getter
+  public static class Response {
+    private String id;
+    private String email;
+    private String name;
+    private String nickname;
 
-  private String name;
+    @JsonProperty("profile_image")
+    private String profileImage;
 
-  private String nickname;
+    private String gender;
+    private String age;
+    private String birthday;
+  }
 
-  @JsonProperty("profile_image")
-  private String profileImage;
+  // ✅ NaverOAuthService에서 쓰는 메서드
+  public String getId() {
+    return response != null ? response.getId() : null;
+  }
 
-  private String gender;
-
-  private String age;
-
-  private String birthday;
+  public String getEmail() {
+    return response != null ? response.getEmail() : null;
+  }
 }
+
+// 네이버 응답 구조
+// {
+//  "resultcode": "00",
+//  "message": "success",
+//  "response": {          // ← 이 안에 실제 데이터가 들어있음
+//    "id": "123456",
+//    "email": "test@naver.com",
+//    "name": "홍길동"
+//  }
+// }

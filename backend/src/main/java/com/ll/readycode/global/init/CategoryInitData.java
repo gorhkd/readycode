@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.transaction.annotation.Transactional;
 
-@Profile({"frontend", "local"})
+@Profile({"frontend", "local", "prod"})
 @Configuration
 @RequiredArgsConstructor
 public class CategoryInitData {
