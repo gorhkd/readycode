@@ -115,7 +115,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy readycode app" \
             --cloud-watch-output-config "CloudWatchOutputEnabled=true" \
-            --output-s3-bucket-name readycode-artifacts-gorhkd223-ap-northeast-2 \
+            --output-s3-bucket-name readycode-tfstate-bucket \
             --output-s3-key-prefix ssm-logs/readycode \
             --timeout-seconds 900 \
             --cli-binary-format raw-in-base64-out \
