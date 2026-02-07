@@ -64,7 +64,7 @@ jobs:
               "ROOT=/var/www/readycode",
               "REL=$ROOT/releases/$(date +%Y%m%d-%H%M%S)",
               "S3_BUCKET=readycode-tfstate-bucket",
-              "S3_KEY=frontend/frontend.tgz",
+              "S3_KEY=artifacts/frontend/frontend.tgz",
 
               "command -v aws >/dev/null 2>&1 || { sudo apt-get update -y && sudo apt-get install -y awscli; }",
               "sudo mkdir -p \"$REL\"",
@@ -78,7 +78,7 @@ jobs:
               "sudo nginx -t && sudo systemctl reload nginx",
 
               "for i in {1..30}; do",
-              "  CODE=$(curl -s -o /dev/null -w '%{http_code}' --resolve readycode.shop:443:127.0.0.1 https://readycode.shop/healthz || echo 000)",
+              "  CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1/healthz || echo 000)",
               "  [ \"$CODE\" = \"200\" ] && echo OK && exit 0 || sleep 2",
               "done",
               "echo 'Frontend health failed'; exit 1"
@@ -96,19 +96,36 @@ jobs:
             --query "Command.CommandId" --output text)
           echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Wait SSM
+      - name: Wait SSM (with logs)
         run: |
+          set -euo pipefail
+          CMD_ID="${{ steps.ssm.outputs.command_id }}"
+          IID="${{ secrets.EC2_INSTANCE_ID }}"
+          
           for i in {1..60}; do
-            S=$(aws ssm get-command-invocation \
+            STATUS=$(aws ssm get-command-invocation \
               --region ap-northeast-2 \
-              --command-id "${{ steps.ssm.outputs.command_id }}" \
-              --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
-              --query 'Status' --output text || echo Pending)
-            echo "SSM: $S"
-            case "$S" in
+              --command-id "$CMD_ID" \
+              --instance-id "$IID" \
+              --query 'Status' --output text 2>/dev/null || echo Pending)
+          
+            echo "SSM: $STATUS"
+          
+            case "$STATUS" in
               Success) exit 0;;
-              Failed|Cancelled|TimedOut) exit 1;;
+              Failed|Cancelled|TimedOut)
+                echo "::group::SSM failure details"
+                aws ssm get-command-invocation \
+                  --region ap-northeast-2 \
+                  --command-id "$CMD_ID" \
+                  --instance-id "$IID" \
+                  --query '{Status:Status,Code:ResponseCode,Stdout:StandardOutputContent,Stderr:StandardErrorContent}' \
+                  --output text || true
+                echo "::endgroup::"
+                exit 1;;
             esac
+          
             sleep 5
           done
+          
           echo "Timeout"; exit 1
