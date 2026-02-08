@@ -9,13 +9,11 @@ import com.ll.readycode.domain.templates.templates.entity.Template;
 import com.ll.readycode.domain.templates.templates.repository.TemplateRepository;
 import com.ll.readycode.domain.users.userprofiles.entity.UserProfile;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Profile({"frontend", "local, prod"})
 public class TemplateSeedService {
 
   private final CategoryService categoryService;
