@@ -1,7 +1,7 @@
 
 type Provider = 'google' | 'kakao' | 'naver'
 
-const REDIRECT_BASE = 'http://localhost:3000'
+const REDIRECT_BASE = 'https://readycode.shop'
 const REDIRECT_PATH = '/oauth'
 
 const CLIENT_ID: Record<Provider, string> = {
