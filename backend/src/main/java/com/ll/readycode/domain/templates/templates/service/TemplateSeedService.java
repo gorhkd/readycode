@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Profile({"frontend", "local"})
+@Profile({"frontend", "local, prod"})
 public class TemplateSeedService {
 
   private final CategoryService categoryService;
