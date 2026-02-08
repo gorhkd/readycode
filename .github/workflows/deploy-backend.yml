@@ -4,8 +4,8 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/**'
       - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
 permissions:
   id-token: write
   contents: read
@@ -34,7 +34,14 @@ jobs:
 
       - name: Prepare artifact name
         run: |
-          JAR="$(ls build/libs/*-SNAPSHOT*.jar 2>/dev/null || ls build/libs/*.jar | head -n 1)"
+          JAR="$(ls build/libs/*-SNAPSHOT.jar 2>/dev/null | head -n 1 || true)"
+          
+          if [ -z "$JAR" ]; then
+            echo "ERROR: build/libs/*-SNAPSHOT.jar not found"
+            ls -al build/libs || true
+            exit 1
+          fi
+          
           echo "Found: $JAR"
           cp "$JAR" build/libs/app.jar
 
