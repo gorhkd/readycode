@@ -6,6 +6,7 @@ import com.ll.readycode.global.common.auth.jwt.JwtProvider;
 import com.ll.readycode.global.common.auth.oauth.properties.OAuthProperties;
 import com.ll.readycode.global.common.auth.token.RefreshTokenStore;
 import com.ll.readycode.global.exception.CustomException;
+import com.ll.readycode.global.exception.ErrorCode;
 import org.springframework.web.client.RestTemplate;
 
 public abstract class AbstractOAuthService<T, U> implements OAuthService {
@@ -34,6 +35,8 @@ public abstract class AbstractOAuthService<T, U> implements OAuthService {
     U userInfo = getUserInfo(getAccessTokenFromResponse(tokenResponse));
     String provider = getProvider();
     String providerId = extractId(userInfo);
+    if (providerId.isEmpty() || providerId == null)
+      throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
     String email = extractEmail(userInfo);
 
     Token token;
