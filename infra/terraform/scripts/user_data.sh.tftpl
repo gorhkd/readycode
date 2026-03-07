@@ -1,8 +1,6 @@
 #!/bin/bash
 
 set -euo pipefail
-# user_data_version=${user_data_version}
-# (위 라인은 Terraform이 user_data 변경을 감지/강제 replace 하도록 남겨둠)
 
 exec > >(tee -a /var/log/user-data.log) 2>&1
 
@@ -402,6 +400,7 @@ EOF
 chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
 
 echo "[9] try env sync once (non-fatal)"
-/usr/local/bin/readycode-sync-env
+/usr/local/bin/readycode-sync-env || true
+systemctl start readycode.service
 
-echo "Done. (app not started yet)"
+echo "Done. app started(or attempted)"
